@@ -1,0 +1,9 @@
+packages:
+  - "packages/*"
+  - "apps/api"
+  - "apps/web"
+# apps/mobile and apps/desktop are built with their own toolchains (EAS / electron-builder)
+onlyBuiltDependencies:
+  - bcrypt
+  - "@nestjs/core"
+  - esbuild

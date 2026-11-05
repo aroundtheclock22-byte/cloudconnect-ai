@@ -1,0 +1,24 @@
+{
+  "name": "cloudconnect-ai",
+  "private": true,
+  "version": "0.1.0",
+  "packageManager": "pnpm@10.28.0",
+  "scripts": {
+    "build": "pnpm -r --filter ./packages/** --filter ./apps/api --filter ./apps/web build",
+    "test": "pnpm -r --filter ./packages/** --filter ./apps/api test",
+    "test:integration": "pnpm --filter @cloudconnect/api test:integration",
+    "test:e2e": "pnpm --filter @cloudconnect/web test:e2e",
+    "lint": "pnpm -r --filter ./packages/** --filter ./apps/api --filter ./apps/web typecheck",
+    "db:migrate": "pnpm --filter @cloudconnect/api db:migrate",
+    "db:seed": "pnpm --filter @cloudconnect/api db:seed",
+    "dev:api": "pnpm --filter @cloudconnect/api dev",
+    "dev:web": "pnpm --filter @cloudconnect/web dev"
+  },
+  "devDependencies": {
+    "@types/jest": "29.5.14",
+    "@types/node": "22.10.2",
+    "jest": "29.7.0",
+    "ts-jest": "29.2.5",
+    "typescript": "5.6.3"
+  }
+}

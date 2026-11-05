@@ -1,0 +1,12 @@
+node_modules
+dist
+.next
+coverage
+*.log
+.env
+.env.*
+!.env.example
+.terraform
+*.tfstate*
+test-results
+playwright-report
