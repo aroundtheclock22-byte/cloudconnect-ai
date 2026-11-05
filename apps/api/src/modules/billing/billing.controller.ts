@@ -62,7 +62,7 @@ export class BillingController {
 
   @RequirePermissions('billing:read') @Get('usage')
   usage(@CurrentUser() u: AuthUser, @Query('days') days = '30') {
-    return this.db.query(`SELECT date_trunc('day', occurred_at) day, kind, sum(quantity)::float quantity, sum(cost_cents)::int "costCents" FROM usage_records WHERE org_id=$1 AND occurred_at > now() - make_interval(days => $2) GROUP BY 1,2 ORDER BY 1`,
+    return this.db.query(`SELECT date_trunc('day', occurred_at) AS day, kind, sum(quantity)::float quantity, sum(cost_cents)::int "costCents" FROM usage_records WHERE org_id=$1 AND occurred_at > now() - make_interval(days => $2) GROUP BY 1,2 ORDER BY 1`,
       [u.orgId, Math.min(Number(days) || 30, 400)]);
   }
 

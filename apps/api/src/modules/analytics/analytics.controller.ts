@@ -49,9 +49,9 @@ export class AnalyticsController {
           COALESCE(avg(duration_seconds) FILTER (WHERE answered_at IS NOT NULL),0)::int "avgDuration", COALESCE(sum(duration_seconds),0)::int "totalSeconds",
           COALESCE(avg(EXTRACT(EPOCH FROM answered_at - started_at)) FILTER (WHERE answered_at IS NOT NULL AND direction='inbound'),0)::int "avgSpeedToAnswer", COALESCE(sum(cost_cents),0)::int "costCents"
         FROM calls WHERE org_id=$1 AND started_at BETWEEN $2 AND $3 AND ($4::uuid IS NULL OR user_id=$4)`, [u.orgId, from, to, q.userId ?? null]),
-      this.db.query(`SELECT date_trunc('day', started_at)::date day, count(*)::int total, count(*) FILTER (WHERE answered_at IS NOT NULL)::int answered, count(*) FILTER (WHERE direction='inbound' AND answered_at IS NULL AND status <> 'rejected')::int missed
+      this.db.query(`SELECT date_trunc('day', started_at)::date AS day, count(*)::int total, count(*) FILTER (WHERE answered_at IS NOT NULL)::int answered, count(*) FILTER (WHERE direction='inbound' AND answered_at IS NULL AND status <> 'rejected')::int missed
         FROM calls WHERE org_id=$1 AND started_at BETWEEN $2 AND $3 AND ($4::uuid IS NULL OR user_id=$4) GROUP BY 1 ORDER BY 1`, [u.orgId, from, to, q.userId ?? null]),
-      this.db.query(`SELECT EXTRACT(HOUR FROM started_at AT TIME ZONE o.timezone)::int hour, count(*)::int calls FROM calls c JOIN organizations o ON o.id=c.org_id WHERE c.org_id=$1 AND started_at BETWEEN $2 AND $3 GROUP BY 1 ORDER BY 1`, [u.orgId, from, to]),
+      this.db.query(`SELECT EXTRACT(HOUR FROM started_at AT TIME ZONE o.timezone)::int AS hour, count(*)::int calls FROM calls c JOIN organizations o ON o.id=c.org_id WHERE c.org_id=$1 AND started_at BETWEEN $2 AND $3 GROUP BY 1 ORDER BY 1`, [u.orgId, from, to]),
       this.db.query(`SELECT COALESCE(country,'??') country, count(*)::int calls, COALESCE(sum(duration_seconds),0)::int seconds, COALESCE(sum(cost_cents),0)::int "costCents" FROM calls WHERE org_id=$1 AND started_at BETWEEN $2 AND $3 GROUP BY 1 ORDER BY 2 DESC LIMIT 50`, [u.orgId, from, to]),
       this.db.query(`SELECT routing_path->>-1 node, count(*)::int calls, count(*) FILTER (WHERE answered_at IS NOT NULL)::int answered, COALESCE(avg(EXTRACT(EPOCH FROM answered_at - started_at)) FILTER (WHERE answered_at IS NOT NULL),0)::int "avgWait"
         FROM calls WHERE org_id=$1 AND direction='inbound' AND started_at BETWEEN $2 AND $3 AND jsonb_array_length(routing_path) > 0 GROUP BY 1 ORDER BY 2 DESC LIMIT 20`, [u.orgId, from, to]),
@@ -62,7 +62,7 @@ export class AnalyticsController {
   @RequirePermissions('analytics:read:team') @Get('messaging')
   async messaging(@CurrentUser() u: AuthUser, @Query() q: { from?: string; to?: string; days?: string }) {
     const { from, to } = range(q);
-    return this.db.query(`SELECT date_trunc('day', m.created_at)::date day, c.kind, count(*) FILTER (WHERE direction='outbound')::int sent, count(*) FILTER (WHERE direction='inbound')::int received,
+    return this.db.query(`SELECT date_trunc('day', m.created_at)::date AS day, c.kind, count(*) FILTER (WHERE direction='outbound')::int sent, count(*) FILTER (WHERE direction='inbound')::int received,
       count(*) FILTER (WHERE status='failed')::int failed, COALESCE(sum(cost_cents),0)::int "costCents" FROM messages m JOIN conversations c ON c.id=m.conversation_id
       WHERE m.org_id=$1 AND m.created_at BETWEEN $2 AND $3 GROUP BY 1,2 ORDER BY 1`, [u.orgId, from, to]);
   }
@@ -82,7 +82,7 @@ export class AnalyticsController {
   async ai(@CurrentUser() u: AuthUser, @Query() q: { from?: string; to?: string; days?: string }) {
     const { from, to } = range(q);
     const [sentiment, keywords, coaching] = await Promise.all([
-      this.db.query(`SELECT date_trunc('day', created_at)::date day, sentiment, count(*)::int n FROM ai_insights WHERE org_id=$1 AND created_at BETWEEN $2 AND $3 GROUP BY 1,2 ORDER BY 1`, [u.orgId, from, to]),
+      this.db.query(`SELECT date_trunc('day', created_at)::date AS day, sentiment, count(*)::int n FROM ai_insights WHERE org_id=$1 AND created_at BETWEEN $2 AND $3 GROUP BY 1,2 ORDER BY 1`, [u.orgId, from, to]),
       this.db.query(`SELECT k keyword, count(*)::int n FROM ai_insights, unnest(keywords) k WHERE org_id=$1 AND created_at BETWEEN $2 AND $3 GROUP BY 1 ORDER BY 2 DESC LIMIT 25`, [u.orgId, from, to]),
       this.db.query(`SELECT t tip, count(*)::int n FROM ai_insights, jsonb_array_elements_text(coaching) t WHERE org_id=$1 AND created_at BETWEEN $2 AND $3 GROUP BY 1 ORDER BY 2 DESC LIMIT 10`, [u.orgId, from, to]),
     ]);

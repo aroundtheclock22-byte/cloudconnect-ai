@@ -122,6 +122,11 @@ describe('telephony: IVR → ring group → voicemail → missed-call lifecycle'
     expect(call.body.routingPath).toEqual(['hours', 'menu', 'vm']);
     const dash = await request(http).get('/v1/analytics/dashboard').set(auth(o.token)).expect(200);
     expect(dash.body.today.voicemails).toBe(1);
+    for (const r of ['calls', 'messaging', 'users', 'ai']) await request(http).get(`/v1/analytics/${r}?days=7`).set(auth(o.token)).expect(200);
+    const an = await request(http).get('/v1/analytics/calls?days=7').set(auth(o.token)).expect(200);
+    expect(an.body.totals.inbound).toBeGreaterThanOrEqual(1);
+    expect(an.body.hourly.length).toBeGreaterThan(0);
+    await request(http).get('/v1/billing/usage').set(auth(o.token)).expect(200);
   });
 
   it('places outbound calls with caller-ID selection and blocks IRSF fraud', async () => {
