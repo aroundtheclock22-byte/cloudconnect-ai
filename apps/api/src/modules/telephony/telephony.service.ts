@@ -187,7 +187,7 @@ export class TelephonyService {
 
   async voicemail(provider: string, q: Record<string, string>, p: CallParams) {
     const call = await this.db.one(`SELECT * FROM calls WHERE id=$1`, [q.callId]);
-    const box = await this.db.one(`SELECT * FROM voicemail_boxes WHERE id=$1`, [q.mailbox]).catch(() => undefined);
+    const box = call ? await this.db.one(`SELECT * FROM voicemail_boxes WHERE id=$1 AND org_id=$2`, [q.mailbox, call.org_id]).catch(() => undefined) : undefined;
     if (call && box && p.recordingUrl) {
       const vm = await this.db.one(`INSERT INTO voicemails (org_id, mailbox_id, call_id, from_number, storage_key, duration_seconds) VALUES ($1,$2,$3,$4,$5,$6) RETURNING id`,
         [call.org_id, box.id, call.id, call.from_number, p.recordingUrl, p.recordingDuration ?? 0]);
