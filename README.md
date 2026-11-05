@@ -46,7 +46,8 @@ Current results: **22 shared unit · 16 API unit · 14 API integration · 10 e2e
 | [Database](docs/DATABASE.md) | schema, tenancy & RLS, partitioning |
 | [API](docs/API.md) · [OpenAPI](docs/api/openapi.json) · [GraphQL SDL](docs/api/schema.graphql) | auth, endpoints, webhooks |
 | [Security & compliance](docs/SECURITY.md) | controls, SOC 2 / HIPAA / GDPR / PCI readiness, known gaps |
-| [Deployment](docs/DEPLOYMENT.md) | production rollout & runbook |
+| [Launch on GitHub + Railway](docs/RAILWAY.md) | fastest path to a live deployment, CI → staging e2e → production |
+| [Deployment (AWS)](docs/DEPLOYMENT.md) | multi-region production rollout & runbook |
 | [User & admin guide](docs/USER_GUIDE.md) | end-user documentation |
 | [Mobile](apps/mobile/README.md) · [Desktop](apps/desktop/README.md) | native app notes |
 

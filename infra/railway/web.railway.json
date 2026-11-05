@@ -1,0 +1,5 @@
+{
+  "$schema": "https://railway.com/railway.schema.json",
+  "build": { "builder": "DOCKERFILE", "dockerfilePath": "infra/docker/web.Dockerfile", "watchPatterns": ["apps/web/**", "packages/shared/**", "infra/docker/web.Dockerfile", "pnpm-lock.yaml"] },
+  "deploy": { "healthcheckPath": "/login", "healthcheckTimeout": 120, "restartPolicyType": "ON_FAILURE", "restartPolicyMaxRetries": 5 }
+}

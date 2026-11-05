@@ -9,7 +9,7 @@ ENV NEXT_TELEMETRY_DISABLED=1
 COPY pnpm-lock.yaml pnpm-workspace.yaml package.json tsconfig.base.json ./
 COPY packages/shared/package.json packages/shared/
 COPY apps/web/package.json apps/web/
-RUN --mount=type=cache,id=pnpm,target=/root/.local/share/pnpm/store pnpm install --frozen-lockfile --filter @cloudconnect/web...
+RUN pnpm install --frozen-lockfile --filter @cloudconnect/web...
 COPY packages/shared packages/shared
 COPY apps/web apps/web
 ARG NEXT_PUBLIC_WS_URL=https://api.cloudconnect.ai

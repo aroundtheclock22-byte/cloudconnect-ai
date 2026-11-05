@@ -1,0 +1,64 @@
+# Launch pipeline: CI green on main → deploy staging → smoke + Playwright e2e against staging → (approval) → production.
+name: Railway
+on:
+  workflow_run: { workflows: [CI], types: [completed], branches: [main] }
+  workflow_dispatch:
+permissions: { contents: read }
+concurrency:
+  group: railway-deploy
+  cancel-in-progress: false
+
+jobs:
+  staging:
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    environment: { name: staging, url: "${{ vars.STAGING_WEB_URL }}" }
+    env: { RAILWAY_TOKEN: "${{ secrets.RAILWAY_TOKEN_STAGING }}" }
+    steps:
+      - uses: actions/checkout@v4
+        with: { ref: "${{ github.event.workflow_run.head_sha || github.sha }}" }
+      - run: npm install -g @railway/cli
+      - name: Deploy API (runs migrations + demo seed as pre-deploy)
+        run: railway up --service api --environment staging --ci
+      - name: Deploy web
+        run: railway up --service web --environment staging --ci
+      - name: Smoke test
+        run: |
+          for i in $(seq 1 30); do curl -fsS "${{ vars.STAGING_API_URL }}/health/ready" && break; sleep 10; done
+          curl -fsS "${{ vars.STAGING_API_URL }}/health/ready"
+          curl -fsS -o /dev/null "${{ vars.STAGING_WEB_URL }}/login"
+          curl -fsS "${{ vars.STAGING_WEB_URL }}/v1/billing/plans" | grep -q '"starter"'
+
+  e2e-staging:
+    needs: staging
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { ref: "${{ github.event.workflow_run.head_sha || github.sha }}" }
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: pnpm }
+      - run: pnpm install --frozen-lockfile --filter @cloudconnect/web
+      - run: cd apps/web && npx playwright install --with-deps chromium
+      - run: cd apps/web && npx playwright test --trace off
+        env: { E2E_BASE_URL: "${{ vars.STAGING_WEB_URL }}", CI: "true" }
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with: { name: playwright-staging, path: apps/web/playwright-report }
+
+  production:
+    needs: e2e-staging
+    runs-on: ubuntu-latest
+    environment: { name: production, url: "${{ vars.PRODUCTION_WEB_URL }}" }   # add required reviewers to gate launches
+    env: { RAILWAY_TOKEN: "${{ secrets.RAILWAY_TOKEN_PRODUCTION }}" }
+    steps:
+      - uses: actions/checkout@v4
+        with: { ref: "${{ github.event.workflow_run.head_sha || github.sha }}" }
+      - run: npm install -g @railway/cli
+      - run: railway up --service api --environment production --ci
+      - run: railway up --service web --environment production --ci
+      - name: Smoke test
+        run: |
+          for i in $(seq 1 30); do curl -fsS "${{ vars.PRODUCTION_API_URL }}/health/ready" && break; sleep 10; done
+          curl -fsS "${{ vars.PRODUCTION_API_URL }}/health/ready"
+          curl -fsS -o /dev/null "${{ vars.PRODUCTION_WEB_URL }}/login"

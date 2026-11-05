@@ -1,6 +1,6 @@
 name: Deploy
+# AWS/EKS path (see docs/DEPLOYMENT.md). Manual until the AWS stack exists; Railway (railway.yml) is the default launch target.
 on:
-  workflow_run: { workflows: [CI], types: [completed], branches: [main] }
   workflow_dispatch:
     inputs: { environment: { type: choice, options: [staging, production], default: staging } }
 permissions: { contents: read, id-token: write }
@@ -10,7 +10,7 @@ concurrency:
 
 jobs:
   staging:
-    if: ${{ github.event_name == 'workflow_dispatch' && inputs.environment == 'staging' || github.event.workflow_run.conclusion == 'success' }}
+    if: ${{ inputs.environment == 'staging' || inputs.environment == 'production' }}
     runs-on: ubuntu-latest
     environment: staging
     steps:
