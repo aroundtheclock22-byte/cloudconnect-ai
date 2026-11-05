@@ -1,0 +1,19 @@
+# Applied by CI before rolling the API (argocd sync-wave -1). The migrator takes a PG advisory lock.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: db-migrate
+  annotations: { argocd.argoproj.io/hook: PreSync, argocd.argoproj.io/hook-delete-policy: BeforeHookCreation }
+spec:
+  backoffLimit: 2
+  ttlSecondsAfterFinished: 3600
+  template:
+    spec:
+      restartPolicy: Never
+      securityContext: { runAsNonRoot: true, runAsUser: 100, seccompProfile: { type: RuntimeDefault } }
+      containers:
+        - name: migrate
+          image: ghcr.io/cloudconnect-ai/api:latest
+          command: ["node", "scripts/migrate.js"]
+          envFrom: [{ secretRef: { name: cloudconnect-secrets } }]
+          securityContext: { allowPrivilegeEscalation: false, readOnlyRootFilesystem: true, capabilities: { drop: [ALL] } }

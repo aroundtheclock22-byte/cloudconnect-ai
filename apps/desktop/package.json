@@ -1,0 +1,25 @@
+{
+  "name": "@cloudconnect/desktop",
+  "version": "1.0.0",
+  "private": true,
+  "description": "CloudConnect AI desktop softphone for Windows, macOS and Linux",
+  "main": "dist/main.js",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "start": "npm run build && electron .",
+    "dist": "npm run build && electron-builder --publish never",
+    "dist:all": "npm run build && electron-builder -mwl --publish never"
+  },
+  "dependencies": { "electron-updater": "6.3.9" },
+  "devDependencies": { "electron": "33.3.1", "electron-builder": "25.1.8", "typescript": "5.6.3" },
+  "build": {
+    "appId": "ai.cloudconnect.desktop",
+    "productName": "CloudConnect",
+    "files": ["dist/**/*", "build/**/*"],
+    "protocols": [{ "name": "CloudConnect", "schemes": ["cloudconnect", "tel", "callto", "sip"] }],
+    "mac": { "category": "public.app-category.business", "hardenedRuntime": true, "entitlements": "build/entitlements.mac.plist", "entitlementsInherit": "build/entitlements.mac.plist", "target": ["dmg", "zip"], "extendInfo": { "NSMicrophoneUsageDescription": "Microphone access is required for calls and meetings.", "NSCameraUsageDescription": "Camera access is required for video meetings." } },
+    "win": { "target": ["nsis", "msi"], "publisherName": "CloudConnect AI" },
+    "linux": { "target": ["AppImage", "deb", "rpm"], "category": "Network;Telephony" },
+    "publish": [{ "provider": "generic", "url": "https://downloads.cloudconnect.ai/desktop" }]
+  }
+}

@@ -1,0 +1,51 @@
+name: Deploy
+on:
+  workflow_run: { workflows: [CI], types: [completed], branches: [main] }
+  workflow_dispatch:
+    inputs: { environment: { type: choice, options: [staging, production], default: staging } }
+permissions: { contents: read, id-token: write }
+concurrency:
+  group: deploy-${{ inputs.environment || 'staging' }}
+  cancel-in-progress: false
+
+jobs:
+  staging:
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.environment == 'staging' || github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - uses: actions/checkout@v4
+      - uses: aws-actions/configure-aws-credentials@v4
+        with: { role-to-assume: "${{ vars.AWS_DEPLOY_ROLE }}", aws-region: us-east-1 }
+      - run: aws eks update-kubeconfig --name cloudconnect-staging
+      - name: Migrate + rollout
+        run: |
+          cd infra/k8s/overlays/staging
+          kustomize edit set image ghcr.io/cloudconnect-ai/api:${GITHUB_SHA} ghcr.io/cloudconnect-ai/web:${GITHUB_SHA}
+          kubectl apply -k .
+          kubectl -n cloudconnect-staging wait --for=condition=complete job/db-migrate --timeout=300s
+          kubectl -n cloudconnect-staging rollout status deploy/api --timeout=600s
+          kubectl -n cloudconnect-staging rollout status deploy/web --timeout=600s
+      - name: Smoke test
+        run: curl -fsS https://api.staging.cloudconnect.ai/health/ready
+
+  production:
+    needs: staging
+    runs-on: ubuntu-latest
+    environment: production        # requires manual approval
+    strategy:
+      max-parallel: 1              # one region at a time; the second region keeps serving if the first rollout fails
+      matrix: { region: [us-east-1, eu-west-1] }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: aws-actions/configure-aws-credentials@v4
+        with: { role-to-assume: "${{ vars.AWS_DEPLOY_ROLE }}", aws-region: "${{ matrix.region }}" }
+      - run: aws eks update-kubeconfig --name cloudconnect-$(echo ${{ matrix.region }} | sed 's/us-east-1/use1/;s/eu-west-1/euw1/')
+      - name: Rollout
+        run: |
+          cd infra/k8s/overlays/production-${{ matrix.region }}
+          kustomize edit set image ghcr.io/cloudconnect-ai/api:${GITHUB_SHA} ghcr.io/cloudconnect-ai/web:${GITHUB_SHA}
+          kubectl apply -k .
+          if [ "${{ matrix.region }}" = "us-east-1" ]; then kubectl -n cloudconnect wait --for=condition=complete job/db-migrate --timeout=600s; fi
+          kubectl -n cloudconnect rollout status deploy/api --timeout=900s || (kubectl -n cloudconnect rollout undo deploy/api && exit 1)
+          kubectl -n cloudconnect rollout status deploy/web --timeout=600s || (kubectl -n cloudconnect rollout undo deploy/web && exit 1)

@@ -1,0 +1,26 @@
+# Cloudflare (WAF, DDoS, TLS) → NLB → ingress-nginx. Origin certs via cert-manager; Cloudflare Authenticated Origin Pulls enforced.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: cloudconnect
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-dns01
+    nginx.ingress.kubernetes.io/proxy-body-size: 25m
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"      # websockets
+    nginx.ingress.kubernetes.io/limit-rps: "50"
+    nginx.ingress.kubernetes.io/auth-tls-verify-client: "on"
+    nginx.ingress.kubernetes.io/auth-tls-secret: cloudconnect/cloudflare-origin-ca
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      more_set_headers "Strict-Transport-Security: max-age=63072000; includeSubDomains; preload";
+spec:
+  ingressClassName: nginx
+  tls: [{ hosts: [app.cloudconnect.ai, api.cloudconnect.ai], secretName: cloudconnect-tls }]
+  rules:
+    - host: api.cloudconnect.ai
+      http: { paths: [{ path: /, pathType: Prefix, backend: { service: { name: api, port: { name: http } } } }] }
+    - host: app.cloudconnect.ai
+      http:
+        paths:
+          - { path: /v1, pathType: Prefix, backend: { service: { name: api, port: { name: http } } } }
+          - { path: /ws, pathType: Prefix, backend: { service: { name: api, port: { name: http } } } }
+          - { path: /, pathType: Prefix, backend: { service: { name: web, port: { name: http } } } }

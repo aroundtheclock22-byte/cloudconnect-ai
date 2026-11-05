@@ -8,6 +8,7 @@ const schema = z.object({
   DATABASE_URL: z.string().default('postgres://cloudconnect:cloudconnect@localhost:5432/cloudconnect'),
   DATABASE_POOL_MAX: z.coerce.number().default(20),
   REDIS_URL: z.string().optional(),
+  ELASTICSEARCH_URL: z.string().optional(),
   JWT_SECRET: z.string().min(32).default('dev-only-secret-change-me-0123456789abcdef'),
   ENCRYPTION_KEY: z.string().regex(/^[0-9a-f]{64}$/i).default('0'.repeat(64)), // 32-byte hex, AES-256-GCM (use KMS data key in prod)
   ACCESS_TOKEN_TTL_SECONDS: z.coerce.number().default(900),

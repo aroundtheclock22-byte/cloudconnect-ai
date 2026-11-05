@@ -1,0 +1,22 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata: { name: api }
+spec:
+  selector: { matchLabels: { app.kubernetes.io/part-of: cloudconnect } }
+  endpoints: [{ port: http, path: /metrics, interval: 15s }]
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata: { name: cloudconnect-slo }
+spec:
+  groups:
+    - name: cloudconnect-slo
+      rules:
+        - alert: ApiHighErrorRate
+          expr: sum(rate(cc_http_errors_total[5m])) / sum(rate(cc_http_request_duration_seconds_count[5m])) > 0.01
+          for: 5m
+          labels: { severity: page }
+        - alert: TelephonyWebhookLatency
+          expr: histogram_quantile(0.95, sum(rate(cc_http_request_duration_seconds_bucket{route=~"/v1/telephony/.*"}[5m])) by (le)) > 0.25
+          for: 5m
+          labels: { severity: page }

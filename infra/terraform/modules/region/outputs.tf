@@ -1,0 +1,9 @@
+output "cluster_name" { value = module.eks.cluster_name }
+output "cluster_endpoint" { value = module.eks.cluster_endpoint }
+output "db_writer_endpoint" { value = aws_rds_cluster.db.endpoint }
+output "db_reader_endpoint" { value = aws_rds_cluster.db.reader_endpoint }
+output "redis_endpoint" { value = aws_elasticache_replication_group.redis.configuration_endpoint_address }
+output "opensearch_endpoint" { value = aws_opensearch_domain.search.endpoint }
+output "media_bucket_arn" { value = aws_s3_bucket.media.arn }
+output "api_role_arn" { value = module.api_irsa.iam_role_arn }
+output "kms_key_arn" { value = aws_kms_key.main.arn }

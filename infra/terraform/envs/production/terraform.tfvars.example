@@ -1,0 +1,7 @@
+cloudflare_zone_id    = "your-zone-id"
+cloudflare_account_id = "your-account-id"
+kms_admin_arns        = ["arn:aws:iam::123456789012:role/platform-admin"]
+ingress_hostnames = {
+  "us-east-1" = "a1b2c3-ingress.elb.us-east-1.amazonaws.com"
+  "eu-west-1" = "d4e5f6-ingress.elb.eu-west-1.amazonaws.com"
+}

@@ -196,6 +196,8 @@ describe('contacts', () => {
     const primary = dups.body[0].contactIds.find((id: string) => id !== a.body.id);
     const m = await request(http).post('/v1/contacts/merge').set(auth(o.token)).send({ primaryId: primary, duplicateIds: [a.body.id] }).expect(200);
     expect(m.body.merged).toBe(1);
+    const found = await request(http).get('/v1/search?q=Acme').set(auth(o.token)).expect(200);
+    expect(found.body[0]).toMatchObject({ type: 'contact', title: 'Jane Doe' });
     const lookup = await request(http).get('/v1/contacts/lookup?phone=4155550001').set(auth(o.token)).expect(200);
     expect(lookup.body.firstName).toBe('Jane');
     const exp = await request(http).get('/v1/contacts/export.csv').set(auth(o.token)).expect(200);

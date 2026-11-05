@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: ConfigMap
+metadata: { name: cloudconnect-config }
+data:
+  NODE_ENV: production
+  PORT: "4000"
+  TELEPHONY_PROVIDER: twilio
+  TELEPHONY_VERIFY_SIGNATURES: "true"
+  OPENAI_MODEL: gpt-4o-mini
+  DATABASE_POOL_MAX: "15"
+  RATE_LIMIT_PER_MINUTE: "600"
+---
+# Secrets are synced from AWS Secrets Manager by External Secrets Operator (never committed).
+apiVersion: external-secrets.io/v1beta1
+kind: ExternalSecret
+metadata: { name: cloudconnect-secrets }
+spec:
+  refreshInterval: 1h
+  secretStoreRef: { kind: ClusterSecretStore, name: aws-secrets-manager }
+  target: { name: cloudconnect-secrets }
+  dataFrom: [{ extract: { key: cloudconnect/production/api } }]   # DATABASE_URL, REDIS_URL, JWT_SECRET, ENCRYPTION_KEY, TWILIO_*, OPENAI_API_KEY, STRIPE_*, LIVEKIT_*, SENTRY_DSN …

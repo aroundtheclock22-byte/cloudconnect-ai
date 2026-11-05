@@ -21,10 +21,18 @@ export function SoftphoneProvider({ children }: { children: ReactNode }) {
   const [transferTo, setTransferTo] = useState('');
 
   useEffect(() => { const t = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(t); }, []);
+  // Desktop app: tel:/callto:/sip: links and tray "Dial…" route here.
+  useEffect(() => { (window as any).cloudconnectDesktop?.onDial((n: string) => { setOpen(true); if (n) setNumber(n); }); if ('Notification' in window && Notification.permission === 'default') Notification.requestPermission().catch(() => undefined); }, []);
   useEffect(() => {
     const s = realtime();
     if (!s) return;
-    const onRing = (e: any) => setIncoming(e.data);
+    const desktop = (window as any).cloudconnectDesktop;
+    const onRing = (e: any) => {
+      setIncoming(e.data);
+      const who = e.data.contact ? `${e.data.contact.first_name} ${e.data.contact.last_name}` : fmtPhone(e.data.from);
+      if (desktop) desktop.notify('Incoming call', who, 'call');
+      else if ('Notification' in window && Notification.permission === 'granted' && document.hidden) new Notification('Incoming call', { body: who });
+    };
     const onDone = () => setIncoming(null);
     s.on('call.ringing', onRing); s.on('call.answered', onDone); s.on('call.missed', onDone);
     return () => { s.off('call.ringing', onRing); s.off('call.answered', onDone); s.off('call.missed', onDone); };

@@ -1,0 +1,22 @@
+groups:
+  - name: cloudconnect-slo
+    rules:
+      - alert: ApiHighErrorRate
+        expr: sum(rate(cc_http_errors_total[5m])) / sum(rate(cc_http_request_duration_seconds_count[5m])) > 0.01
+        for: 5m
+        labels: { severity: page }
+        annotations: { summary: "API 5xx rate above 1% (99.99% availability budget burning)" }
+      - alert: ApiLatencyP99
+        expr: histogram_quantile(0.99, sum(rate(cc_http_request_duration_seconds_bucket[5m])) by (le)) > 1
+        for: 10m
+        labels: { severity: ticket }
+        annotations: { summary: "API p99 latency > 1s" }
+      - alert: TelephonyWebhookLatency
+        expr: histogram_quantile(0.95, sum(rate(cc_http_request_duration_seconds_bucket{route=~"/v1/telephony/.*"}[5m])) by (le)) > 0.25
+        for: 5m
+        labels: { severity: page }
+        annotations: { summary: "Carrier webhook p95 > 250ms — callers hear dead air" }
+      - alert: EventLoopLag
+        expr: cc_nodejs_eventloop_lag_p99_seconds > 0.2
+        for: 5m
+        labels: { severity: ticket }

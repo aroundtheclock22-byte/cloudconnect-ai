@@ -24,6 +24,8 @@ import { WebhookDispatcher } from './modules/platform/webhooks.service';
 import { RealtimeGateway } from './modules/realtime/realtime.gateway';
 import { CallControlController, TelephonyWebhookController } from './modules/telephony/telephony.controller';
 import { TelephonyService } from './modules/telephony/telephony.service';
+import { SearchController } from './modules/search/search.controller';
+import { SearchService } from './modules/search/search.service';
 
 /**
  * Single deployable "modular monolith". Each controller/service pair is a bounded context that
@@ -33,10 +35,10 @@ import { TelephonyService } from './modules/telephony/telephony.service';
   imports: [ThrottlerModule.forRoot([{ name: 'default', ttl: 60_000, limit: Number(process.env.RATE_LIMIT_PER_MINUTE ?? 600) }])],
   controllers: [
     HealthController, AuthController, DirectoryController, NumbersController, CallControlController, CallsController, TelephonyWebhookController,
-    SmsWebhookController, MessagingController, ContactsController, MeetingsController, BillingController, AnalyticsController, AdminController,
+    SmsWebhookController, MessagingController, ContactsController, MeetingsController, BillingController, AnalyticsController, AdminController, SearchController,
   ],
   providers: [
-    Db, EventBus, AuditService, AuthService, AiService, FraudService, TelephonyService, MessagingService, WebhookDispatcher, RealtimeGateway,
+    Db, EventBus, AuditService, AuthService, AiService, FraudService, TelephonyService, MessagingService, WebhookDispatcher, RealtimeGateway, SearchService,
     { provide: APP_GUARD, useClass: ThrottlerGuard },
     { provide: APP_GUARD, useClass: AuthGuard },
     { provide: APP_INTERCEPTOR, useClass: AuditInterceptor },

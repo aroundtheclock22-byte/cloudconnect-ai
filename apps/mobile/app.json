@@ -1,0 +1,39 @@
+{
+  "expo": {
+    "name": "CloudConnect AI",
+    "slug": "cloudconnect-ai",
+    "scheme": "cloudconnect",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "ios": {
+      "bundleIdentifier": "ai.cloudconnect.app",
+      "supportsTablet": true,
+      "infoPlist": {
+        "UIBackgroundModes": ["audio", "voip", "remote-notification", "fetch"],
+        "NSMicrophoneUsageDescription": "CloudConnect needs the microphone for calls and meetings.",
+        "NSCameraUsageDescription": "CloudConnect needs the camera for video meetings.",
+        "NSContactsUsageDescription": "Match callers to your contacts.",
+        "NSFaceIDUsageDescription": "Unlock CloudConnect with Face ID.",
+        "NSUserActivityTypes": ["INStartCallIntent", "ai.cloudconnect.call", "ai.cloudconnect.voicemail"]
+      },
+      "entitlements": {
+        "com.apple.developer.carplay-communication": true,
+        "com.apple.security.application-groups": ["group.ai.cloudconnect"],
+        "aps-environment": "production"
+      }
+    },
+    "android": {
+      "package": "ai.cloudconnect.app",
+      "permissions": ["RECORD_AUDIO", "CAMERA", "READ_CONTACTS", "BLUETOOTH_CONNECT", "FOREGROUND_SERVICE", "FOREGROUND_SERVICE_PHONE_CALL", "FOREGROUND_SERVICE_MICROPHONE", "MANAGE_OWN_CALLS", "READ_PHONE_STATE", "CALL_PHONE", "POST_NOTIFICATIONS", "USE_FULL_SCREEN_INTENT", "BIND_TELECOM_CONNECTION_SERVICE"],
+      "googleServicesFile": "./google-services.json"
+    },
+    "plugins": [
+      "expo-secure-store",
+      "expo-local-authentication",
+      ["expo-notifications", { "color": "#2550eb" }],
+      "@twilio/voice-react-native-sdk"
+    ],
+    "extra": { "apiUrl": "https://api.cloudconnect.ai", "eas": { "projectId": "REPLACE_WITH_EAS_PROJECT_ID" } }
+  }
+}
