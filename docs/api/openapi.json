@@ -1,0 +1,2401 @@
+{
+    "openapi": "3.0.0",
+    "paths": {
+        "/v1/auth/signup": {
+            "post": {
+                "operationId": "AuthController_signup",
+                "parameters": [],
+                "responses": {
+                    "201": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "auth"
+                ]
+            }
+        },
+        "/v1/auth/login": {
+            "post": {
+                "operationId": "AuthController_login",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "auth"
+                ]
+            }
+        },
+        "/v1/auth/refresh": {
+            "post": {
+                "operationId": "AuthController_refresh",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "auth"
+                ]
+            }
+        },
+        "/v1/auth/logout": {
+            "post": {
+                "operationId": "AuthController_logout",
+                "parameters": [],
+                "responses": {
+                    "204": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "auth"
+                ]
+            }
+        },
+        "/v1/auth/me": {
+            "get": {
+                "operationId": "AuthController_me",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "auth"
+                ]
+            }
+        },
+        "/v1/auth/mfa/setup": {
+            "post": {
+                "operationId": "AuthController_mfaSetup",
+                "parameters": [],
+                "responses": {
+                    "201": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "auth"
+                ]
+            }
+        },
+        "/v1/auth/mfa/enable": {
+            "post": {
+                "operationId": "AuthController_mfaEnable",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "auth"
+                ]
+            }
+        },
+        "/v1/auth/mfa/disable": {
+            "post": {
+                "operationId": "AuthController_mfaDisable",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "auth"
+                ]
+            }
+        },
+        "/v1/auth/sessions": {
+            "get": {
+                "operationId": "AuthController_sessions",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "auth"
+                ]
+            }
+        },
+        "/v1/auth/sessions/{id}": {
+            "delete": {
+                "operationId": "AuthController_revoke",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "required": true,
+                        "in": "path",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "auth"
+                ]
+            }
+        },
+        "/v1/auth/oauth/{provider}": {
+            "get": {
+                "operationId": "AuthController_oauthStart",
+                "parameters": [
+                    {
+                        "name": "provider",
+                        "required": true,
+                        "in": "path",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "auth"
+                ]
+            }
+        },
+        "/v1/auth/oauth/{provider}/callback": {
+            "get": {
+                "operationId": "AuthController_oauthCallbackGet",
+                "parameters": [
+                    {
+                        "name": "provider",
+                        "required": true,
+                        "in": "path",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "code",
+                        "required": true,
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "state",
+                        "required": true,
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "auth"
+                ]
+            },
+            "post": {
+                "operationId": "AuthController_oauthCallbackPost",
+                "parameters": [
+                    {
+                        "name": "provider",
+                        "required": true,
+                        "in": "path",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "auth"
+                ]
+            }
+        },
+        "/v1/auth/api-keys": {
+            "get": {
+                "operationId": "AuthController_listKeys",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "auth"
+                ]
+            },
+            "post": {
+                "operationId": "AuthController_createKey",
+                "parameters": [],
+                "responses": {
+                    "201": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "auth"
+                ]
+            }
+        },
+        "/v1/auth/api-keys/{id}": {
+            "delete": {
+                "operationId": "AuthController_revokeKey",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "required": true,
+                        "in": "path",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "auth"
+                ]
+            }
+        },
+        "/v1/users": {
+            "get": {
+                "operationId": "DirectoryController_list",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "users"
+                ]
+            },
+            "post": {
+                "operationId": "DirectoryController_invite",
+                "parameters": [],
+                "responses": {
+                    "201": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "users"
+                ]
+            }
+        },
+        "/v1/users/{id}": {
+            "get": {
+                "operationId": "DirectoryController_get",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "required": true,
+                        "in": "path",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "users"
+                ]
+            },
+            "patch": {
+                "operationId": "DirectoryController_update",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "required": true,
+                        "in": "path",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "users"
+                ]
+            },
+            "delete": {
+                "operationId": "DirectoryController_remove",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "required": true,
+                        "in": "path",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "users"
+                ]
+            }
+        },
+        "/v1/me/presence": {
+            "put": {
+                "operationId": "DirectoryController_presence",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "users"
+                ]
+            }
+        },
+        "/v1/me/call-handling": {
+            "put": {
+                "operationId": "DirectoryController_forwarding",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "users"
+                ]
+            }
+        },
+        "/v1/directory": {
+            "get": {
+                "operationId": "DirectoryController_directory",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "users"
+                ]
+            }
+        },
+        "/v1/teams": {
+            "get": {
+                "operationId": "DirectoryController_teams",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "users"
+                ]
+            },
+            "post": {
+                "operationId": "DirectoryController_createTeam",
+                "parameters": [],
+                "responses": {
+                    "201": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "users"
+                ]
+            }
+        },
+        "/v1/teams/{id}": {
+            "delete": {
+                "operationId": "DirectoryController_deleteTeam",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "required": true,
+                        "in": "path",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "users"
+                ]
+            }
+        },
+        "/v1/devices": {
+            "get": {
+                "operationId": "DirectoryController_devices",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "users"
+                ]
+            },
+            "post": {
+                "operationId": "DirectoryController_registerDevice",
+                "parameters": [],
+                "responses": {
+                    "201": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "users"
+                ]
+            }
+        },
+        "/v1/devices/{id}": {
+            "delete": {
+                "operationId": "DirectoryController_removeDevice",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "required": true,
+                        "in": "path",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "users"
+                ]
+            }
+        },
+        "/v1/numbers": {
+            "get": {
+                "operationId": "NumbersController_list",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "numbers"
+                ]
+            },
+            "post": {
+                "operationId": "NumbersController_purchase",
+                "parameters": [],
+                "responses": {
+                    "201": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "numbers"
+                ]
+            }
+        },
+        "/v1/numbers/available": {
+            "get": {
+                "operationId": "NumbersController_search",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "numbers"
+                ]
+            }
+        },
+        "/v1/numbers/{id}": {
+            "patch": {
+                "operationId": "NumbersController_update",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "required": true,
+                        "in": "path",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "numbers"
+                ]
+            },
+            "delete": {
+                "operationId": "NumbersController_release",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "required": true,
+                        "in": "path",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "numbers"
+                ]
+            }
+        },
+        "/v1/numbers/port-requests": {
+            "post": {
+                "operationId": "NumbersController_port",
+                "parameters": [],
+                "responses": {
+                    "201": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "numbers"
+                ]
+            },
+            "get": {
+                "operationId": "NumbersController_ports",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "numbers"
+                ]
+            }
+        },
+        "/v1/blocked-numbers": {
+            "get": {
+                "operationId": "NumbersController_blocked",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "numbers"
+                ]
+            },
+            "post": {
+                "operationId": "NumbersController_block",
+                "parameters": [],
+                "responses": {
+                    "201": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "numbers"
+                ]
+            }
+        },
+        "/v1/blocked-numbers/{e164}": {
+            "delete": {
+                "operationId": "NumbersController_unblock",
+                "parameters": [
+                    {
+                        "name": "e164",
+                        "required": true,
+                        "in": "path",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "numbers"
+                ]
+            }
+        },
+        "/v1/routing-flows": {
+            "get": {
+                "operationId": "NumbersController_flows",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "numbers"
+                ]
+            },
+            "post": {
+                "operationId": "NumbersController_createFlow",
+                "parameters": [],
+                "responses": {
+                    "201": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "numbers"
+                ]
+            }
+        },
+        "/v1/routing-flows/{id}": {
+            "put": {
+                "operationId": "NumbersController_updateFlow",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "required": true,
+                        "in": "path",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "numbers"
+                ]
+            },
+            "delete": {
+                "operationId": "NumbersController_deleteFlow",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "required": true,
+                        "in": "path",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "numbers"
+                ]
+            }
+        },
+        "/v1/routing-flows/validate": {
+            "post": {
+                "operationId": "NumbersController_validate",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "numbers"
+                ]
+            }
+        },
+        "/v1/sip-trunks": {
+            "get": {
+                "operationId": "NumbersController_trunks",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "numbers"
+                ]
+            },
+            "post": {
+                "operationId": "NumbersController_createTrunk",
+                "parameters": [],
+                "responses": {
+                    "201": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "numbers"
+                ]
+            }
+        },
+        "/v1/sip-trunks/{id}": {
+            "delete": {
+                "operationId": "NumbersController_deleteTrunk",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "required": true,
+                        "in": "path",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "numbers"
+                ]
+            }
+        },
+        "/v1/calls": {
+            "post": {
+                "operationId": "CallControlController_dial",
+                "parameters": [],
+                "responses": {
+                    "201": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "calls"
+                ]
+            },
+            "get": {
+                "operationId": "CallsController_list",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "calls"
+                ]
+            }
+        },
+        "/v1/calls/{id}/{action}": {
+            "post": {
+                "operationId": "CallControlController_control",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "required": true,
+                        "in": "path",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "action",
+                        "required": true,
+                        "in": "path",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "calls"
+                ]
+            }
+        },
+        "/v1/park/{orbit}/pickup": {
+            "post": {
+                "operationId": "CallControlController_pickup",
+                "parameters": [
+                    {
+                        "name": "orbit",
+                        "required": true,
+                        "in": "path",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "calls"
+                ]
+            }
+        },
+        "/v1/telephony/token": {
+            "get": {
+                "operationId": "CallControlController_token",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "calls"
+                ]
+            }
+        },
+        "/v1/calls/active": {
+            "get": {
+                "operationId": "CallsController_active",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "calls"
+                ]
+            }
+        },
+        "/v1/calls/{id}": {
+            "get": {
+                "operationId": "CallsController_get",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "required": true,
+                        "in": "path",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "calls"
+                ]
+            }
+        },
+        "/v1/calls/{id}/tags": {
+            "patch": {
+                "operationId": "CallsController_tags",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "required": true,
+                        "in": "path",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "calls"
+                ]
+            }
+        },
+        "/v1/calls/{id}/analyze": {
+            "post": {
+                "operationId": "CallsController_analyze",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "required": true,
+                        "in": "path",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "calls"
+                ]
+            }
+        },
+        "/v1/recordings/{id}": {
+            "get": {
+                "operationId": "CallsController_recording",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "required": true,
+                        "in": "path",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "calls"
+                ]
+            },
+            "delete": {
+                "operationId": "CallsController_deleteRecording",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "required": true,
+                        "in": "path",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "calls"
+                ]
+            }
+        },
+        "/v1/voicemails": {
+            "get": {
+                "operationId": "CallsController_voicemails",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "calls"
+                ]
+            }
+        },
+        "/v1/voicemails/{id}/audio": {
+            "get": {
+                "operationId": "CallsController_voicemailAudio",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "required": true,
+                        "in": "path",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "calls"
+                ]
+            }
+        },
+        "/v1/voicemails/{id}": {
+            "patch": {
+                "operationId": "CallsController_markVoicemail",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "required": true,
+                        "in": "path",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "calls"
+                ]
+            },
+            "delete": {
+                "operationId": "CallsController_deleteVoicemail",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "required": true,
+                        "in": "path",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "calls"
+                ]
+            }
+        },
+        "/v1/telephony/{provider}/sms": {
+            "post": {
+                "operationId": "SmsWebhookController_inbound",
+                "parameters": [
+                    {
+                        "name": "provider",
+                        "required": true,
+                        "in": "path",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "SmsWebhook"
+                ]
+            }
+        },
+        "/v1/telephony/{provider}/sms/status": {
+            "post": {
+                "operationId": "SmsWebhookController_status",
+                "parameters": [
+                    {
+                        "name": "provider",
+                        "required": true,
+                        "in": "path",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "SmsWebhook"
+                ]
+            }
+        },
+        "/v1/messages": {
+            "post": {
+                "operationId": "MessagingController_send",
+                "parameters": [],
+                "responses": {
+                    "201": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "messaging"
+                ]
+            }
+        },
+        "/v1/messages/bulk": {
+            "post": {
+                "operationId": "MessagingController_bulk",
+                "parameters": [],
+                "responses": {
+                    "201": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "messaging"
+                ]
+            }
+        },
+        "/v1/messages/segments": {
+            "post": {
+                "operationId": "MessagingController_segments",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "messaging"
+                ]
+            }
+        },
+        "/v1/conversations": {
+            "get": {
+                "operationId": "MessagingController_conversations",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "messaging"
+                ]
+            }
+        },
+        "/v1/conversations/{id}/messages": {
+            "get": {
+                "operationId": "MessagingController_messages",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "required": true,
+                        "in": "path",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "before",
+                        "required": true,
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "messaging"
+                ]
+            }
+        },
+        "/v1/conversations/{id}/read": {
+            "post": {
+                "operationId": "MessagingController_read",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "required": true,
+                        "in": "path",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "messaging"
+                ]
+            }
+        },
+        "/v1/conversations/{id}/suggest-replies": {
+            "post": {
+                "operationId": "MessagingController_suggest",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "required": true,
+                        "in": "path",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "messaging"
+                ]
+            }
+        },
+        "/v1/chats": {
+            "post": {
+                "operationId": "MessagingController_createChat",
+                "parameters": [],
+                "responses": {
+                    "201": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "messaging"
+                ]
+            }
+        },
+        "/v1/chats/{id}/messages": {
+            "post": {
+                "operationId": "MessagingController_postChat",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "required": true,
+                        "in": "path",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "messaging"
+                ]
+            }
+        },
+        "/v1/sms-templates": {
+            "get": {
+                "operationId": "MessagingController_templates",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "messaging"
+                ]
+            },
+            "post": {
+                "operationId": "MessagingController_createTemplate",
+                "parameters": [],
+                "responses": {
+                    "201": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "messaging"
+                ]
+            }
+        },
+        "/v1/sms-templates/{id}": {
+            "delete": {
+                "operationId": "MessagingController_deleteTemplate",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "required": true,
+                        "in": "path",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "messaging"
+                ]
+            }
+        },
+        "/v1/auto-replies": {
+            "get": {
+                "operationId": "MessagingController_autoReplies",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "messaging"
+                ]
+            },
+            "put": {
+                "operationId": "MessagingController_upsertAutoReply",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "messaging"
+                ]
+            }
+        },
+        "/v1/contacts": {
+            "get": {
+                "operationId": "ContactsController_list",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "contacts"
+                ]
+            },
+            "post": {
+                "operationId": "ContactsController_create",
+                "parameters": [],
+                "responses": {
+                    "201": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "contacts"
+                ]
+            }
+        },
+        "/v1/contacts/lookup": {
+            "get": {
+                "operationId": "ContactsController_lookup",
+                "parameters": [
+                    {
+                        "name": "phone",
+                        "required": true,
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "contacts"
+                ]
+            }
+        },
+        "/v1/contacts/duplicates": {
+            "get": {
+                "operationId": "ContactsController_duplicates",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "contacts"
+                ]
+            }
+        },
+        "/v1/contacts/merge": {
+            "post": {
+                "operationId": "ContactsController_merge",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "contacts"
+                ]
+            }
+        },
+        "/v1/contacts/{id}": {
+            "patch": {
+                "operationId": "ContactsController_update",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "required": true,
+                        "in": "path",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "contacts"
+                ]
+            },
+            "delete": {
+                "operationId": "ContactsController_remove",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "required": true,
+                        "in": "path",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "contacts"
+                ]
+            }
+        },
+        "/v1/contacts/import": {
+            "post": {
+                "operationId": "ContactsController_import",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "contacts"
+                ]
+            }
+        },
+        "/v1/contacts/export.csv": {
+            "get": {
+                "operationId": "ContactsController_export",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "contacts"
+                ]
+            }
+        },
+        "/v1/contacts/groups": {
+            "get": {
+                "operationId": "ContactsController_groups",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "contacts"
+                ]
+            },
+            "post": {
+                "operationId": "ContactsController_createGroup",
+                "parameters": [],
+                "responses": {
+                    "201": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "contacts"
+                ]
+            }
+        },
+        "/v1/meetings": {
+            "get": {
+                "operationId": "MeetingsController_list",
+                "parameters": [
+                    {
+                        "name": "upcoming",
+                        "required": true,
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "meetings"
+                ]
+            },
+            "post": {
+                "operationId": "MeetingsController_create",
+                "parameters": [],
+                "responses": {
+                    "201": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "meetings"
+                ]
+            }
+        },
+        "/v1/meetings/{id}": {
+            "patch": {
+                "operationId": "MeetingsController_update",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "required": true,
+                        "in": "path",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "meetings"
+                ]
+            },
+            "delete": {
+                "operationId": "MeetingsController_remove",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "required": true,
+                        "in": "path",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "meetings"
+                ]
+            }
+        },
+        "/v1/meetings/{code}/ics": {
+            "get": {
+                "operationId": "MeetingsController_icsFile",
+                "parameters": [
+                    {
+                        "name": "code",
+                        "required": true,
+                        "in": "path",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "meetings"
+                ]
+            }
+        },
+        "/v1/meetings/{code}/join": {
+            "post": {
+                "operationId": "MeetingsController_join",
+                "parameters": [
+                    {
+                        "name": "code",
+                        "required": true,
+                        "in": "path",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "meetings"
+                ]
+            }
+        },
+        "/v1/meetings/{code}/participants/{pid}/status": {
+            "get": {
+                "operationId": "MeetingsController_waitStatus",
+                "parameters": [
+                    {
+                        "name": "code",
+                        "required": true,
+                        "in": "path",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "pid",
+                        "required": true,
+                        "in": "path",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "meetings"
+                ]
+            }
+        },
+        "/v1/meetings/{id}/participants/{pid}/{decision}": {
+            "post": {
+                "operationId": "MeetingsController_admit",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "required": true,
+                        "in": "path",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "pid",
+                        "required": true,
+                        "in": "path",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "decision",
+                        "required": true,
+                        "in": "path",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "meetings"
+                ]
+            }
+        },
+        "/v1/meetings/{id}/breakouts": {
+            "post": {
+                "operationId": "MeetingsController_breakouts",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "required": true,
+                        "in": "path",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "meetings"
+                ]
+            }
+        },
+        "/v1/meetings/{id}/end": {
+            "post": {
+                "operationId": "MeetingsController_end",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "required": true,
+                        "in": "path",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "meetings"
+                ]
+            }
+        },
+        "/v1/meetings/{id}/notes": {
+            "post": {
+                "operationId": "MeetingsController_notes",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "required": true,
+                        "in": "path",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "meetings"
+                ]
+            }
+        },
+        "/v1/meetings/{id}/analytics": {
+            "get": {
+                "operationId": "MeetingsController_analytics",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "required": true,
+                        "in": "path",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "meetings"
+                ]
+            }
+        },
+        "/v1/billing/plans": {
+            "get": {
+                "operationId": "BillingController_plans",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "billing"
+                ]
+            }
+        },
+        "/v1/billing/rates": {
+            "get": {
+                "operationId": "BillingController_rates",
+                "parameters": [
+                    {
+                        "name": "country",
+                        "required": true,
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "billing"
+                ]
+            }
+        },
+        "/v1/billing/subscription": {
+            "get": {
+                "operationId": "BillingController_subscription",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "billing"
+                ]
+            }
+        },
+        "/v1/billing/invoice-preview": {
+            "get": {
+                "operationId": "BillingController_preview",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "billing"
+                ]
+            }
+        },
+        "/v1/billing/invoices": {
+            "get": {
+                "operationId": "BillingController_invoices",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "billing"
+                ]
+            }
+        },
+        "/v1/billing/usage": {
+            "get": {
+                "operationId": "BillingController_usage",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "billing"
+                ]
+            }
+        },
+        "/v1/billing/checkout": {
+            "post": {
+                "operationId": "BillingController_checkout",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "billing"
+                ]
+            }
+        },
+        "/v1/billing/portal": {
+            "post": {
+                "operationId": "BillingController_portal",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "billing"
+                ]
+            }
+        },
+        "/v1/billing/stripe/webhook": {
+            "post": {
+                "operationId": "BillingController_webhook",
+                "parameters": [
+                    {
+                        "name": "stripe-signature",
+                        "required": true,
+                        "in": "header",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "billing"
+                ]
+            }
+        },
+        "/v1/analytics/dashboard": {
+            "get": {
+                "operationId": "AnalyticsController_dashboard",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "analytics"
+                ]
+            }
+        },
+        "/v1/analytics/calls": {
+            "get": {
+                "operationId": "AnalyticsController_calls",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "analytics"
+                ]
+            }
+        },
+        "/v1/analytics/messaging": {
+            "get": {
+                "operationId": "AnalyticsController_messaging",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "analytics"
+                ]
+            }
+        },
+        "/v1/analytics/users": {
+            "get": {
+                "operationId": "AnalyticsController_users",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "analytics"
+                ]
+            }
+        },
+        "/v1/analytics/ai": {
+            "get": {
+                "operationId": "AnalyticsController_ai",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "analytics"
+                ]
+            }
+        },
+        "/v1/organization": {
+            "get": {
+                "operationId": "AdminController_org",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "admin"
+                ]
+            },
+            "patch": {
+                "operationId": "AdminController_updateOrg",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "admin"
+                ]
+            }
+        },
+        "/v1/audit-logs": {
+            "get": {
+                "operationId": "AdminController_audit",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "admin"
+                ]
+            }
+        },
+        "/v1/security/overview": {
+            "get": {
+                "operationId": "AdminController_security",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "admin"
+                ]
+            }
+        },
+        "/v1/security/users/{id}/revoke-sessions": {
+            "post": {
+                "operationId": "AdminController_revokeAll",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "required": true,
+                        "in": "path",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "admin"
+                ]
+            }
+        },
+        "/v1/privacy/users/{id}/export": {
+            "get": {
+                "operationId": "AdminController_gdprExport",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "required": true,
+                        "in": "path",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "admin"
+                ]
+            }
+        },
+        "/v1/privacy/erase": {
+            "post": {
+                "operationId": "AdminController_erase",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "admin"
+                ]
+            }
+        },
+        "/v1/webhooks": {
+            "get": {
+                "operationId": "AdminController_hooks",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "admin"
+                ]
+            },
+            "post": {
+                "operationId": "AdminController_createHook",
+                "parameters": [],
+                "responses": {
+                    "201": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "admin"
+                ]
+            }
+        },
+        "/v1/webhooks/{id}": {
+            "delete": {
+                "operationId": "AdminController_deleteHook",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "required": true,
+                        "in": "path",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "admin"
+                ]
+            }
+        },
+        "/v1/webhooks/{id}/deliveries": {
+            "get": {
+                "operationId": "AdminController_deliveries",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "required": true,
+                        "in": "path",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "admin"
+                ]
+            }
+        },
+        "/v1/integrations": {
+            "get": {
+                "operationId": "AdminController_integrations",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "admin"
+                ]
+            },
+            "post": {
+                "operationId": "AdminController_connect",
+                "parameters": [],
+                "responses": {
+                    "201": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "admin"
+                ]
+            }
+        },
+        "/v1/integrations/{provider}": {
+            "delete": {
+                "operationId": "AdminController_disconnect",
+                "parameters": [
+                    {
+                        "name": "provider",
+                        "required": true,
+                        "in": "path",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "admin"
+                ]
+            }
+        },
+        "/v1/ai/translate": {
+            "post": {
+                "operationId": "AdminController_translate",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "admin"
+                ]
+            }
+        },
+        "/v1/ai/draft": {
+            "post": {
+                "operationId": "AdminController_draft",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "admin"
+                ]
+            }
+        },
+        "/v1/ai/analyze": {
+            "post": {
+                "operationId": "AdminController_analyze",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "admin"
+                ]
+            }
+        },
+        "/v1/ai/status": {
+            "get": {
+                "operationId": "AdminController_aiStatus",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "admin"
+                ]
+            }
+        },
+        "/v1/search": {
+            "get": {
+                "operationId": "SearchController_search",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "search"
+                ]
+            }
+        }
+    },
+    "info": {
+        "title": "CloudConnect AI API",
+        "description": "REST API for voice, SMS, meetings, contacts, numbers, analytics and administration.",
+        "version": "1.0",
+        "contact": {}
+    },
+    "tags": [],
+    "servers": [],
+    "components": {
+        "securitySchemes": {
+            "bearer": {
+                "scheme": "bearer",
+                "bearerFormat": "JWT",
+                "type": "http"
+            }
+        },
+        "schemas": {}
+    }
+}

@@ -1,0 +1,28 @@
+
+  type User { id: ID! email: String! firstName: String! lastName: String! role: String! presence: String! extension: String department: String }
+  type PhoneNumber { id: ID! e164: String! type: String! country: String! label: String assignedUserId: ID }
+  type AiInsight { summary: String sentiment: String callScore: Int keywords: [String!]! }
+  type Call { id: ID! direction: String! status: String! from: String! to: String! startedAt: String! durationSeconds: Int! user: User insight: AiInsight }
+  type Contact { id: ID! firstName: String! lastName: String! company: String phones: [String!]! emails: [String!]! tags: [String!]! favorite: Boolean! }
+  type Conversation { id: ID! kind: String! participants: [String!]! lastMessageAt: String! messages(limit: Int = 50): [Message!]! }
+  type Message { id: ID! direction: String! status: String! from: String! body: String! createdAt: String! }
+  type Meeting { id: ID! title: String! joinCode: String! scheduledStart: String mode: String! }
+  type Voicemail { id: ID! from: String! durationSeconds: Int! transcript: String aiSummary: String isRead: Boolean! createdAt: String! }
+  type CallStats { total: Int! answered: Int! missed: Int! avgDuration: Int! }
+  type Query {
+    me: User!
+    users(search: String, limit: Int = 50): [User!]!
+    numbers: [PhoneNumber!]!
+    calls(limit: Int = 25, direction: String): [Call!]!
+    call(id: ID!): Call
+    contacts(search: String, limit: Int = 50): [Contact!]!
+    conversations(limit: Int = 25): [Conversation!]!
+    meetings(limit: Int = 25): [Meeting!]!
+    voicemails(limit: Int = 25): [Voicemail!]!
+    callStats(days: Int = 7): CallStats!
+  }
+  type Mutation {
+    setPresence(status: String!, note: String): User!
+    createContact(firstName: String!, lastName: String, phones: [String!], emails: [String!], tags: [String!]): Contact!
+    markVoicemailRead(id: ID!, isRead: Boolean!): Voicemail
+  }
