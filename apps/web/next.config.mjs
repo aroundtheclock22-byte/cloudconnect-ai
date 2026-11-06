@@ -1,13 +1,10 @@
 /** @type {import('next').NextConfig} */
-const API = process.env.API_URL ?? 'http://localhost:4000';
 export default {
   reactStrictMode: true,
   output: 'standalone',
   poweredByHeader: false,
-  async rewrites() {
-    // Same-origin API access so the httpOnly refresh cookie (path /v1/auth) works without CORS.
-    return [{ source: '/v1/:path*', destination: `${API}/v1/:path*` }, { source: '/graphql', destination: `${API}/graphql` }];
-  },
+  // /v1/* and /graphql are proxied to the API at request time by app/v1/[...path]/route.ts (reads API_URL at runtime),
+  // keeping the httpOnly refresh cookie (path /v1/auth) same-origin.
   async headers() {
     return [{ source: '/:path*', headers: [
       { key: 'X-Frame-Options', value: 'DENY' },

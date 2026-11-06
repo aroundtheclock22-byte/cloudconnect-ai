@@ -13,14 +13,12 @@ RUN pnpm install --frozen-lockfile --filter @cloudconnect/web...
 COPY packages/shared packages/shared
 COPY apps/web apps/web
 ARG NEXT_PUBLIC_WS_URL=https://api.cloudconnect.ai
-# Rewrites (/v1, /graphql → API) are resolved at build time. In k8s/compose the ingress routes these paths
-# to the API directly; this is the in-cluster fallback.
-ARG API_URL=http://api.cloudconnect.svc.cluster.local
-ENV NEXT_PUBLIC_WS_URL=$NEXT_PUBLIC_WS_URL API_URL=$API_URL
+ENV NEXT_PUBLIC_WS_URL=$NEXT_PUBLIC_WS_URL
 RUN pnpm --filter @cloudconnect/shared build && pnpm --filter @cloudconnect/web build
 
 FROM node:22.12-alpine AS runtime
-ENV NODE_ENV=production PORT=3000 HOSTNAME=0.0.0.0 NEXT_TELEMETRY_DISABLED=1
+# API_URL is read at runtime by the /v1 proxy route
+ENV NODE_ENV=production PORT=3000 HOSTNAME=0.0.0.0 NEXT_TELEMETRY_DISABLED=1 API_URL=http://api.cloudconnect.svc.cluster.local
 RUN addgroup -S app && adduser -S app -G app
 WORKDIR /app
 COPY --from=build --chown=app:app /repo/apps/web/.next/standalone ./

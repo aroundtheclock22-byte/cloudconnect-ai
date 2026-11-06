@@ -49,7 +49,7 @@ services:
     depends_on: { migrate: { condition: service_completed_successfully }, redis: { condition: service_healthy } }
     deploy: { replicas: 2 }
   web:
-    build: { context: ., dockerfile: infra/docker/web.Dockerfile, args: { NEXT_PUBLIC_WS_URL: "http://localhost:8080", API_URL: "http://api:4000" } }
+    build: { context: ., dockerfile: infra/docker/web.Dockerfile, args: { NEXT_PUBLIC_WS_URL: "http://localhost:8080" } }
     environment: { API_URL: http://api:4000 }
     depends_on: [api]
   nginx:

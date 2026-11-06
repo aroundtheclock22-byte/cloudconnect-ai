@@ -1,4 +1,7 @@
-import { Controller, Get, Header, ServiceUnavailableException } from '@nestjs/common';
+import { Controller, Get, Header, NotFoundException, Req, ServiceUnavailableException } from '@nestjs/common';
+import { Request } from 'express';
+import { safeEqual } from '../../common/crypto';
+import { isPrivateAddress } from '../platform/webhooks.service';
 import { ApiExcludeController } from '@nestjs/swagger';
 import { SkipThrottle } from '@nestjs/throttler';
 import { collectDefaultMetrics, Counter, Histogram, Registry } from 'prom-client';
@@ -18,5 +21,14 @@ export class HealthController {
   @Get('health/ready') async ready() {
     try { await this.db.query('SELECT 1'); return { status: 'ok', db: 'ok' }; } catch { throw new ServiceUnavailableException({ status: 'degraded', db: 'down' }); }
   }
-  @Get('metrics') @Header('Content-Type', 'text/plain; version=0.0.4') metrics() { return registry.metrics(); }
+  /** Prometheus scrape: allowed with METRICS_TOKEN bearer, or from private networks (in-cluster scrapers). */
+  @Get('metrics') @Header('Content-Type', 'text/plain; version=0.0.4')
+  metrics(@Req() req: Request) {
+    const token = process.env.METRICS_TOKEN;
+    const bearer = (req.headers.authorization ?? '').replace(/^Bearer /, '');
+    const ip = (req.ip ?? '').replace(/^::ffff:/, '');
+    const allowed = (token && safeEqual(bearer, token)) || isPrivateAddress(ip) || (!token && process.env.NODE_ENV !== 'production');
+    if (!allowed) throw new NotFoundException();
+    return registry.metrics();
+  }
 }
