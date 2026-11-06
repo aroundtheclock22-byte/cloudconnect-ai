@@ -5,11 +5,11 @@ on:
   workflow_dispatch:
 permissions: { contents: read }
 env:
-  RAILWAY_PROJECT_ID: ce6f9835-ae8d-43f2-9fa6-52a01d867914
-  RAILWAY_API_SERVICE_ID: 9cef1dd7-9b0b-4f30-a73d-d57638ced3e2
-  RAILWAY_WEB_SERVICE_ID: a4ba9790-e267-4829-8b0e-6a1de36b9a3a
-  STAGING_ENV_ID: 6f1eb45b-c78c-49ba-a73f-e3ace33866e4
-  PRODUCTION_ENV_ID: 669e5b21-1ebb-49de-a986-9873860bd82d
+  RAILWAY_PROJECT_ID: ce6f9835-ae8d-43f2-9fa6-52a01d867914  # gitleaks:allow (resource ID, not a secret)
+  RAILWAY_API_SERVICE_ID: 9cef1dd7-9b0b-4f30-a73d-d57638ced3e2  # gitleaks:allow (resource ID, not a secret)
+  RAILWAY_WEB_SERVICE_ID: a4ba9790-e267-4829-8b0e-6a1de36b9a3a  # gitleaks:allow (resource ID, not a secret)
+  STAGING_ENV_ID: 6f1eb45b-c78c-49ba-a73f-e3ace33866e4  # gitleaks:allow (resource ID, not a secret)
+  PRODUCTION_ENV_ID: 669e5b21-1ebb-49de-a986-9873860bd82d  # gitleaks:allow (resource ID, not a secret)
   STAGING_API_URL: https://api-staging-ae0c.up.railway.app
   STAGING_WEB_URL: https://web-staging-4270.up.railway.app
   PRODUCTION_API_URL: https://api-production-f43f6.up.railway.app
