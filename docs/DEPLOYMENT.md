@@ -63,6 +63,7 @@ kubectl apply -k . && kubectl -n cloudconnect rollout status deploy/api
 
 ## 8. Local & single-host
 ```bash
+export JWT_SECRET=$(openssl rand -hex 48) ENCRYPTION_KEY=$(openssl rand -hex 32)
 docker compose up --build                       # http://localhost:8080 (demo seed: see README)
 docker compose --profile monitoring up -d       # + Prometheus :9090, Grafana :3001
 ```

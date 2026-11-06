@@ -1,4 +1,4 @@
-# Local full stack: docker compose up --build   →  web http://localhost:8080  ·  API docs http://localhost:8080/docs
+# Local full stack: export JWT_SECRET=$(openssl rand -hex 48) ENCRYPTION_KEY=$(openssl rand -hex 32); docker compose up --build   →  web http://localhost:8080  ·  API docs http://localhost:8080/docs
 name: cloudconnect
 x-api-env: &api-env
   NODE_ENV: production
@@ -8,8 +8,9 @@ x-api-env: &api-env
   PUBLIC_URL: http://localhost:8080
   WEB_URL: http://localhost:8080
   CORS_ORIGINS: http://localhost:8080
-  JWT_SECRET: ${JWT_SECRET:-local-compose-secret-change-me-0123456789}
-  ENCRYPTION_KEY: ${ENCRYPTION_KEY:-6b1f1d2a0e5c4b3a29181716151413121110090807060504030201000f0e0d0c}
+  # Required — never ship shared defaults for keys (generate: openssl rand -hex 48 / openssl rand -hex 32)
+  JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET, e.g. export JWT_SECRET=$(openssl rand -hex 48)}
+  ENCRYPTION_KEY: ${ENCRYPTION_KEY:?set ENCRYPTION_KEY, e.g. export ENCRYPTION_KEY=$(openssl rand -hex 32)}
   TELEPHONY_PROVIDER: ${TELEPHONY_PROVIDER:-mock}
   TWILIO_ACCOUNT_SID: ${TWILIO_ACCOUNT_SID:-}
   TWILIO_AUTH_TOKEN: ${TWILIO_AUTH_TOKEN:-}

@@ -1,0 +1,24 @@
+# Secret scanning config (used by gitleaks-action in CI). Extends the default ruleset and allowlists only
+# values that are deliberately fake: dev placeholders, test-only credentials and the published demo login.
+# Never add real values here — rotate the secret instead.
+title = "cloudconnect-ai"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Known non-secret placeholders"
+paths = [
+  '''^apps/api/test/''',
+  '''^apps/web/e2e/''',
+  '''^pnpm-lock\.yaml$''',
+]
+regexes = [
+  '''devsecret-devsecret-devsecret-00''',
+  '''change-me''',
+  '''dev-only-secret''',
+  '''DemoPassw0rd!''',
+  '''0{64}''',
+  # retired docker-compose default (dev only, never used in any deployed environment); compose now requires explicit keys
+  '''6b1f1d2a0e5c4b3a29181716151413121110090807060504030201000f0e0d0c''',
+]

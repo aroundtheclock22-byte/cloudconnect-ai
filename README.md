@@ -26,7 +26,11 @@ pnpm dev:web                                 # http://localhost:3000
 Sign in as **demo@cloudconnect.ai / DemoPassw0rd!** (14 days of calls, AI insights, SMS threads, voicemail, meetings).
 With `TELEPHONY_PROVIDER=mock` (default) every carrier operation is simulated; set Twilio credentials and `PUBLIC_URL` (e.g. an ngrok URL) to take real calls.
 
-Full stack in containers: `docker compose up --build` → http://localhost:8080.
+Full stack in containers (secrets are required, never defaulted):
+```bash
+export JWT_SECRET=$(openssl rand -hex 48) ENCRYPTION_KEY=$(openssl rand -hex 32)
+docker compose up --build        # → http://localhost:8080
+```
 
 ## Tests
 
