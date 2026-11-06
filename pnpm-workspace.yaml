@@ -7,3 +7,7 @@ onlyBuiltDependencies:
   - bcrypt
   - "@nestjs/core"
   - esbuild
+# Security overrides for transitive deps pinned by frameworks (same major; re-check when upgrading Next/Nest)
+overrides:
+  multer: ^2.5.0
+  postcss: ^8.5.18

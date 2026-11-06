@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
+import { useParams } from 'next/navigation';
 import { api } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 import { Icon } from '@/components/Icon';
@@ -10,7 +11,8 @@ import { ErrorNote } from '@/components/ui';
  * pre-join lobby (camera/mic preview), waiting room and in-room controls. Background blur / virtual
  * backgrounds use @livekit/track-processors; captions stream from the transcription agent.
  */
-export default function Meet({ params }: { params: { code: string } }) {
+export default function Meet() {
+  const params = useParams<{ code: string }>();
   const { me } = useAuth();
   const [name, setName] = useState('');
   const [passcode, setPasscode] = useState('');

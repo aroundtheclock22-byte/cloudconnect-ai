@@ -12,7 +12,7 @@ import { smsSegments } from './sms';
 import { verifyWebhook } from '../telephony/telephony.controller';
 
 const Send = z.object({ from: z.string().optional(), to: z.array(z.string()).min(1).max(10), body: z.string().max(1600).default(''), mediaUrls: z.array(z.string().url()).max(10).optional(),
-  scheduledAt: z.string().datetime().optional(), templateId: z.string().uuid().optional(), vars: z.record(z.string()).optional() });
+  scheduledAt: z.string().datetime().optional(), templateId: z.string().uuid().optional(), vars: z.record(z.string(), z.string()).optional() });
 const Bulk = z.object({ name: z.string().min(1), from: z.string().optional(), body: z.string().min(1).max(1600), to: z.array(z.string()).optional(), contactGroupId: z.string().uuid().optional(), scheduledAt: z.string().datetime().optional() });
 const Chat = z.object({ title: z.string().max(80).optional(), memberIds: z.array(z.string().uuid()).min(1) });
 const ChatMsg = z.object({ body: z.string().max(10_000).default(''), attachments: z.array(z.object({ key: z.string(), contentType: z.string(), size: z.number().int().max(100 * 1024 * 1024), name: z.string().optional() })).max(10).optional() });

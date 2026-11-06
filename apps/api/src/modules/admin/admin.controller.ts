@@ -11,10 +11,10 @@ import { assertPublicHttpsUrl } from '../platform/webhooks.service';
 const Webhook = z.object({ url: z.string().url(), events: z.array(z.string()).min(1) });
 const OrgSettings = z.object({ name: z.string().min(2).max(100).optional(), timezone: z.string().optional(), currency: z.string().length(3).optional(), defaultLanguage: z.string().optional(),
   settings: z.object({ recordAllCalls: z.boolean().optional(), recordingRetentionDays: z.number().int().min(1).max(3650).optional(), allowedCountries: z.array(z.string().length(2)).optional(),
-    businessHours: z.any().optional(), taxRatePercent: z.number().min(0).max(30).optional(), aiAgents: z.record(z.any()).optional(), mfaRequired: z.boolean().optional(),
-    sessionTimeoutMinutes: z.number().int().min(5).max(43200).optional(), ipAllowlist: z.array(z.string()).optional(), aiFeatures: z.record(z.boolean()).optional() }).partial().optional() });
+    businessHours: z.any().optional(), taxRatePercent: z.number().min(0).max(30).optional(), aiAgents: z.record(z.string(), z.any()).optional(), mfaRequired: z.boolean().optional(),
+    sessionTimeoutMinutes: z.number().int().min(5).max(43200).optional(), ipAllowlist: z.array(z.string()).optional(), aiFeatures: z.record(z.string(), z.boolean()).optional() }).partial().optional() });
 const Integration = z.object({ provider: z.enum(['salesforce', 'hubspot', 'zoho', 'microsoft_teams', 'slack', 'google_workspace', 'microsoft_365', 'zapier', 'stripe', 'quickbooks', 'calendly', 'zoom', 'outlook', 'gmail']),
-  credentials: z.record(z.string()), settings: z.record(z.any()).default({}) });
+  credentials: z.record(z.string(), z.string()), settings: z.record(z.string(), z.any()).default({}) });
 
 export const INTEGRATION_CATALOG = [
   { provider: 'salesforce', category: 'CRM', capabilities: ['screen_pop', 'call_logging', 'click_to_call', 'contact_sync'] },
