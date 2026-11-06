@@ -32,7 +32,10 @@ test('session survives reload via refresh cookie', async ({ page }) => {
 test('call history with AI insights', async ({ page }) => {
   await login(page);
   await page.getByRole('link', { name: 'Calls' }).click();
-  await page.locator('tbody tr').first().click();
+  await page.waitForURL('**/calls');
+  await expect(page.getByRole('heading', { name: 'Calls', level: 1 })).toBeVisible();
+  // pick a row from the call log itself (not a table left over from the previous page)
+  await page.getByRole('row').filter({ hasText: /\(\d{3}\) \d{3}-\d{4}/ }).first().click();
   await expect(page.getByText('Call details')).toBeVisible();
 });
 
