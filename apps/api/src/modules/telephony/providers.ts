@@ -12,9 +12,11 @@ export interface TelephonyProvider {
   createCall(p: { from: string; to: string; url: string; statusCallback: string; record?: boolean }): Promise<{ providerCallId: string }>;
   updateCall(providerCallId: string, p: { twiml?: string; url?: string; status?: 'completed' }): Promise<void>;
   setRecording(providerCallId: string, status: 'start' | 'paused' | 'in-progress' | 'stopped', callbackUrl?: string): Promise<void>;
+  /** For bridged calls: the active child leg (e.g. the PSTN party dialed from a softphone leg), if any. */
+  findChildCall(parentCallId: string): Promise<string | null>;
   sendSms(p: { from: string; to: string; body: string; mediaUrls?: string[]; statusCallback: string }): Promise<{ providerMessageId: string }>;
   searchNumbers(p: { country: string; type: 'local' | 'toll_free'; areaCode?: string; contains?: string; limit?: number }): Promise<AvailableNumber[]>;
-  purchaseNumber(e164: string, webhooks: { voiceUrl: string; smsUrl: string }): Promise<{ providerSid: string }>;
+  purchaseNumber(e164: string, webhooks: { voiceUrl: string; smsUrl: string; statusUrl?: string }): Promise<{ providerSid: string }>;
   releaseNumber(providerSid: string): Promise<void>;
   clientToken(identity: string, ttlSeconds?: number): Promise<{ token: string; expiresIn: number }>;
 }
@@ -28,6 +30,7 @@ export class MockProvider implements TelephonyProvider {
   async createCall(p: any) { this.rec('createCall', p); return { providerCallId: `CA_mock_${++this.seq}_${Date.now()}` }; }
   async updateCall(id: string, p: any) { this.rec('updateCall', { id, ...p }); }
   async setRecording(id: string, status: string) { this.rec('setRecording', { id, status }); }
+  async findChildCall(_parent: string) { return null; }
   async sendSms(p: any) { this.rec('sendSms', p); return { providerMessageId: `SM_mock_${++this.seq}_${Date.now()}` }; }
   async searchNumbers(p: { country: string; type: 'local' | 'toll_free'; areaCode?: string; limit?: number }) {
     const cc = p.country === 'US' || p.country === 'CA' ? '1' : p.country === 'GB' ? '44' : '1';
@@ -65,6 +68,10 @@ export class TwilioProvider implements TelephonyProvider {
   async updateCall(id: string, p: { twiml?: string; url?: string; status?: 'completed' }) {
     await this.req('POST', `/Calls/${id}.json`, { Twiml: p.twiml, Url: p.url, Status: p.status });
   }
+  async findChildCall(parentCallId: string) {
+    const r: any = await this.req('GET', `/Calls.json?ParentCallSid=${encodeURIComponent(parentCallId)}&Status=in-progress&PageSize=1`);
+    return r.calls?.[0]?.sid ?? null;
+  }
   async setRecording(id: string, status: 'start' | 'paused' | 'in-progress' | 'stopped', callbackUrl?: string) {
     if (status === 'start') await this.req('POST', `/Calls/${id}/Recordings.json`, { RecordingChannels: 'dual', RecordingStatusCallback: callbackUrl });
     else await this.req('POST', `/Calls/${id}/Recordings/Twilio.CURRENT.json`, { Status: status });
@@ -78,8 +85,9 @@ export class TwilioProvider implements TelephonyProvider {
     const r: any = await this.req('GET', `/AvailablePhoneNumbers/${p.country}/${p.type === 'toll_free' ? 'TollFree' : 'Local'}.json?${q}`);
     return (r.available_phone_numbers ?? []).map((n: any) => ({ e164: n.phone_number, locality: n.locality, region: n.region, country: p.country, type: p.type, monthlyCostCents: p.type === 'toll_free' ? 200 : 115 }));
   }
-  async purchaseNumber(e164: string, w: { voiceUrl: string; smsUrl: string }) {
-    const r: any = await this.req('POST', '/IncomingPhoneNumbers.json', { PhoneNumber: e164, VoiceUrl: w.voiceUrl, SmsUrl: w.smsUrl, VoiceMethod: 'POST', SmsMethod: 'POST' });
+  async purchaseNumber(e164: string, w: { voiceUrl: string; smsUrl: string; statusUrl?: string }) {
+    const r: any = await this.req('POST', '/IncomingPhoneNumbers.json', { PhoneNumber: e164, VoiceUrl: w.voiceUrl, SmsUrl: w.smsUrl, VoiceMethod: 'POST', SmsMethod: 'POST',
+      StatusCallback: w.statusUrl, StatusCallbackMethod: w.statusUrl ? 'POST' : undefined });
     return { providerSid: r.sid };
   }
   async releaseNumber(sid: string) { await this.req('DELETE', `/IncomingPhoneNumbers/${sid}.json`); }

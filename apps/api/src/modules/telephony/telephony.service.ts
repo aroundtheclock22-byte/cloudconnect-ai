@@ -324,7 +324,11 @@ export class TelephonyService {
     if (!own && !['monitor', 'whisper', 'barge'].includes(action)) need('calls:read:all');
     if (!call.provider_call_id) throw new BadRequestException('Call is not connected to a carrier leg');
     const base = `${config().PUBLIC_URL}/v1/telephony/${call.provider}`;
-    const sid = call.provider_call_id;
+    // Softphone-originated calls store the agent's (parent) leg; actions that move the *other party*
+    // (hold, transfers, park, conference) must target the bridged child leg, or the customer is dropped.
+    const moving = ['hold', 'unhold', 'transfer', 'warm_transfer', 'conference', 'park'].includes(action);
+    const child = moving && call.direction === 'outbound' ? await this.provider.findChildCall(call.provider_call_id).catch(() => null) : null;
+    const sid = child ?? call.provider_call_id;
     let data: Record<string, unknown> = {};
     switch (action) {
       case 'hold':
@@ -374,6 +378,13 @@ export class TelephonyService {
     }
     await this.db.query(`INSERT INTO call_events (call_id, type, actor_id, data) VALUES ($1,$2,$3,$4)`, [call.id, action, user.userId, data]);
     return { ok: true, action, ...data };
+  }
+
+  /** Maps a carrier call id (e.g. from the browser SDK) to our call id, scoped to the caller's org. */
+  async byProviderId(user: AuthUser, providerCallId: string) {
+    const c = await this.db.one(`SELECT id FROM calls WHERE org_id=$1 AND provider_call_id=$2`, [user.orgId, providerCallId]);
+    if (!c) throw new NotFoundException();
+    return { callId: c.id };
   }
 
   async pickup(user: AuthUser, orbit: string) {

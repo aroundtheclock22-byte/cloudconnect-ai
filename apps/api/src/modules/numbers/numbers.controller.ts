@@ -41,7 +41,7 @@ export class NumbersController {
     if (!e164) throw new BadRequestException('Invalid number');
     if (await this.db.one(`SELECT 1 FROM phone_numbers WHERE e164=$1 AND status <> 'released'`, [e164])) throw new ConflictException('Number already in use');
     const base = `${config().PUBLIC_URL}/v1/telephony/${this.tel.provider.name}`;
-    const { providerSid } = await this.tel.provider.purchaseNumber(e164, { voiceUrl: `${base}/voice`, smsUrl: `${base}/sms` });
+    const { providerSid } = await this.tel.provider.purchaseNumber(e164, { voiceUrl: `${base}/voice`, smsUrl: `${base}/sms`, statusUrl: `${base}/status` });
     const country = countryOf(e164) ?? 'US';
     const type = b.temporaryDays ? 'temporary' : b.vanity ? 'vanity' : isTollFree(e164) ? 'toll_free' : country !== 'US' ? 'international' : 'local';
     const row = await this.db.one(`INSERT INTO phone_numbers (org_id, e164, type, country, label, vanity, provider, provider_sid, assigned_user_id, expires_at, monthly_cost_cents)

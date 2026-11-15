@@ -118,6 +118,9 @@ export class CallControlController {
     return this.svc.control(u, id, action, b);
   }
 
+  @RequirePermissions('calls:make') @Get('calls/by-provider/:providerCallId')
+  byProvider(@CurrentUser() u: AuthUser, @Param('providerCallId') sid: string) { return this.svc.byProviderId(u, sid); }
+
   @RequirePermissions('calls:make') @HttpCode(200) @Post('park/:orbit/pickup')
   pickup(@CurrentUser() u: AuthUser, @Param('orbit') orbit: string) { return this.svc.pickup(u, orbit); }
 
