@@ -1,5 +1,5 @@
 import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
-import { Observable, tap } from 'rxjs';
+import { concatMap, Observable } from 'rxjs';
 import { Db } from './db.service';
 import { AuthUser } from './auth';
 
@@ -28,14 +28,16 @@ export class AuditInterceptor implements NestInterceptor {
     if (ctx.getType() !== 'http') return next.handle();
     const req = ctx.switchToHttp().getRequest();
     if (!['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method) || req.path.includes('/telephony/')) return next.handle();
-    return next.handle().pipe(tap(() => {
+    // Awaited before the response is sent, so a successful mutation always has its audit record.
+    return next.handle().pipe(concatMap(async (data) => {
       const u: AuthUser | undefined = req.user;
-      if (!u) return;
+      if (!u) return data;
       const route: string = req.route?.path ?? req.path;
-      this.audit.log({
+      await this.audit.log({
         orgId: u.orgId, actorId: u.userId ?? u.apiKeyId, actorType: u.apiKeyId ? 'api_key' : 'user',
         action: `${req.method} ${route}`, targetId: req.params?.id, ip: req.ip, userAgent: req.headers['user-agent'], metadata: redact(req.body),
       });
+      return data;
     }));
   }
 }
