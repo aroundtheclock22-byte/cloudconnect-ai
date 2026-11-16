@@ -5,6 +5,7 @@
 import { Logger } from '@nestjs/common';
 import * as jwt from 'jsonwebtoken';
 import { config } from '../../config';
+import { toClientTarget } from './identity';
 
 export interface AvailableNumber { e164: string; locality?: string; region?: string; country: string; type: 'local' | 'toll_free'; monthlyCostCents: number }
 export interface TelephonyProvider {
@@ -62,7 +63,7 @@ export class TwilioProvider implements TelephonyProvider {
     return res.status === 204 ? {} : res.json();
   }
   async createCall(p: { from: string; to: string; url: string; statusCallback: string; record?: boolean }) {
-    const r: any = await this.req('POST', '/Calls.json', { From: p.from, To: p.to, Url: p.url, StatusCallback: p.statusCallback, StatusCallbackEvent: ['initiated', 'ringing', 'answered', 'completed'], Record: p.record ? 'true' : undefined });
+    const r: any = await this.req('POST', '/Calls.json', { From: toClientTarget(p.from), To: toClientTarget(p.to), Url: p.url, StatusCallback: p.statusCallback, StatusCallbackEvent: ['initiated', 'ringing', 'answered', 'completed'], Record: p.record ? 'true' : undefined });
     return { providerCallId: r.sid };
   }
   async updateCall(id: string, p: { twiml?: string; url?: string; status?: 'completed' }) {
@@ -119,7 +120,7 @@ export class TelnyxProvider extends TwilioProvider {
     return res.json() as Promise<any>;
   }
   async createCall(p: { from: string; to: string; url: string; statusCallback: string; record?: boolean }) {
-    const r = await this.v2('POST', `/texml/calls/${config().TELNYX_TEXML_APP_ID}`, { From: p.from, To: p.to, Url: p.url, StatusCallback: p.statusCallback, Record: p.record });
+    const r = await this.v2('POST', `/texml/calls/${config().TELNYX_TEXML_APP_ID}`, { From: toClientTarget(p.from), To: toClientTarget(p.to), Url: p.url, StatusCallback: p.statusCallback, Record: p.record });
     return { providerCallId: r.data?.call_sid ?? r.call_sid };
   }
   async updateCall(id: string, p: { twiml?: string; url?: string; status?: 'completed' }) {

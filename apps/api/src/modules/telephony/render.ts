@@ -5,6 +5,7 @@
  *  - Vonage NCCO (JSON)
  */
 import { Continuation, RoutingAction } from '@cloudconnect/shared';
+import { toClientName } from './identity';
 
 export type Dialect = 'twiml' | 'plivo' | 'ncco';
 export interface RenderCtx { baseUrl: string; provider: string; callId: string; callerId?: string }
@@ -19,7 +20,7 @@ const cb = (ctx: RenderCtx, path: string, extra: Record<string, string> = {}) =>
   `${ctx.baseUrl}/v1/telephony/${ctx.provider}/${path}?${new URLSearchParams({ callId: ctx.callId, ...extra })}`;
 
 function dialTarget(t: string): { kind: 'number' | 'client' | 'sip'; value: string } {
-  if (t.startsWith('client:')) return { kind: 'client', value: t.slice(7) };
+  if (t.startsWith('client:')) return { kind: 'client', value: toClientName(t.slice(7)) };
   if (t.startsWith('sip:')) return { kind: 'sip', value: t };
   return { kind: 'number', value: t };
 }

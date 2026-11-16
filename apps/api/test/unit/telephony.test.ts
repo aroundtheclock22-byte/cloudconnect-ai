@@ -61,3 +61,22 @@ describe('param normalization', () => {
     expect(normalizeParams('vonage', { uuid: 'v', from: '1', to: '2', dtmf: { digits: '9' } })).toMatchObject({ callSid: 'v', digits: '9' });
   });
 });
+
+import { fromClientName, toClientName, toClientTarget } from '../../src/modules/telephony/identity';
+describe('carrier-safe client identities', () => {
+  const id = '0be13162-4165-4e0d-bfae-1184e5e7c9c1';
+  it('maps UUIDs to alphanumeric names and back', () => {
+    expect(toClientName(id)).toBe('u0be1316241654e0dbfae1184e5e7c9c1');
+    expect(toClientName(id)).toMatch(/^[A-Za-z0-9_]+$/);
+    expect(fromClientName(toClientName(id))).toBe(id);
+    expect(toClientName('park')).toBe('park');
+    expect(fromClientName('park')).toBe('park');
+    expect(toClientTarget(`client:${id}`)).toBe(`client:${toClientName(id)}`);
+    expect(toClientTarget('+14155550100')).toBe('+14155550100');
+  });
+  it('renders <Client> nouns and parses SDK callers with safe names', () => {
+    const x = renderTwiml({ kind: 'dial', targets: [`client:${id}`], timeoutSeconds: 20, nodeId: 'g', record: false, callerIdPassthrough: true, then: { nodeId: 'vm' } }, ctx);
+    expect(x).toContain(`<Client>${toClientName(id)}</Client>`);
+    expect(normalizeParams('twilio', { CallSid: 'CA1', From: `client:${toClientName(id)}`, To: '+1' }).identity).toBe(id);
+  });
+});

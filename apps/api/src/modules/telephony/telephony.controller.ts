@@ -8,6 +8,7 @@ import { z$ } from '../../common/validation';
 import { config } from '../../config';
 import { verifyTelnyx, verifyTwilio } from './signature';
 import { normalizeParams, TelephonyService } from './telephony.service';
+import { toClientName } from './identity';
 
 const PROVIDERS = ['mock', 'twilio', 'telnyx', 'signalwire', 'plivo', 'vonage'];
 
@@ -127,6 +128,7 @@ export class CallControlController {
   /** WebRTC client token for the softphone (web, desktop, mobile). */
   @RequirePermissions('calls:make') @Get('telephony/token')
   async token(@CurrentUser() u: AuthUser) {
-    return { provider: this.svc.provider.name, identity: u.userId, ...(await this.svc.provider.clientToken(u.userId!)) };
+    const identity = toClientName(u.userId!);
+    return { provider: this.svc.provider.name, identity, ...(await this.svc.provider.clientToken(identity)) };
   }
 }

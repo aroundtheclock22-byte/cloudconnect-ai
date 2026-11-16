@@ -2,6 +2,7 @@ import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { authenticator } from 'otplib';
 import { auth, bootstrap, signup } from './helpers';
+import { toClientName } from '../../src/modules/telephony/identity';
 
 jest.setTimeout(60_000);
 
@@ -113,7 +114,8 @@ describe('telephony: IVR → ring group → voicemail → missed-call lifecycle'
     const callId = /callId=([0-9a-f-]+)/.exec(first.text)![1];
 
     const dial = await request(http).post(`/v1/telephony/mock/voice/continue?callId=${callId}&node=menu&attempt=0`).type('form').send({ CallSid: 'CA-100', Digits: '1' }).expect(200);
-    expect(dial.text).toContain(`<Client>${o.user.id}</Client>`);
+    expect(dial.text).toContain(`<Client>${toClientName(o.user.id)}</Client>`);
+    expect(dial.text).not.toMatch(/<Client>[^<]*-[^<]*<\/Client>/); // carriers reject hyphens in client names
     expect(dial.text).toContain('record="record-from-answer-dual"');
 
     const vm = await request(http).post(`/v1/telephony/mock/voice/continue?callId=${callId}&node=vm&attempt=0&dial=1`).type('form').send({ CallSid: 'CA-100', DialCallStatus: 'no-answer' }).expect(200);
@@ -157,7 +159,8 @@ describe('telephony: IVR → ring group → voicemail → missed-call lifecycle'
     const bridge = await request(http).post(`/v1/telephony/mock/bridge?callId=${us.body.callId}`).expect(200);
     expect(bridge.text).toContain('<Number>+14155551234</Number>');
     const tok = await request(http).get('/v1/telephony/token').set(auth(o.token)).expect(200);
-    expect(tok.body).toMatchObject({ provider: 'mock', identity: o.user.id });
+    expect(tok.body).toMatchObject({ provider: 'mock', identity: toClientName(o.user.id) });
+    expect(tok.body.identity).toMatch(/^u[0-9a-f]{32}$/);
   });
 });
 

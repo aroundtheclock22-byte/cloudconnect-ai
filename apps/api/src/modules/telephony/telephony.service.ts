@@ -8,6 +8,7 @@ import { AiService } from '../ai/ai.service';
 import { FraudService } from '../platform/fraud.service';
 import { createProvider, TelephonyProvider } from './providers';
 import { render, RenderCtx } from './render';
+import { fromClientName, toClientName } from './identity';
 
 /** Provider-normalized webhook params. */
 export interface CallParams { callSid: string; from: string; to: string; status?: string; digits?: string; speech?: string; dialStatus?: string; dialDuration?: number; duration?: number;
@@ -19,7 +20,7 @@ export function normalizeParams(provider: string, p: Record<string, any>): CallP
   // Twilio, SignalWire (LaML), Telnyx (TeXML) share TwiML parameter names
   return { callSid: p.CallSid, from: p.From, to: p.To, status: p.CallStatus, digits: p.Digits, speech: p.SpeechResult, dialStatus: p.DialCallStatus, dialDuration: Number(p.DialCallDuration) || undefined,
     duration: Number(p.CallDuration) || undefined, recordingUrl: p.RecordingUrl, recordingSid: p.RecordingSid, recordingDuration: Number(p.RecordingDuration) || undefined, transcription: p.TranscriptionText,
-    identity: typeof p.From === 'string' && p.From.startsWith('client:') ? p.From.slice(7) : undefined };
+    identity: typeof p.From === 'string' && p.From.startsWith('client:') ? fromClientName(p.From.slice(7)) : undefined };
 }
 
 const STATUS_MAP: Record<string, string> = { queued: 'queued', initiated: 'queued', ringing: 'ringing', 'in-progress': 'in_progress', answered: 'in_progress', completed: 'completed', busy: 'busy', 'no-answer': 'no_answer', failed: 'failed', canceled: 'canceled' };
@@ -300,7 +301,7 @@ export class TelephonyService {
       if (!to) return xml('<Say>Invalid number.</Say><Hangup/>');
       if (/^\d{2,6}$/.test(to)) {
         const ext = await this.db.one(`SELECT user_id FROM extensions WHERE org_id=$1 AND number=$2`, [user.org_id, to]);
-        return ext?.user_id ? xml(`<Dial><Client>${esc(ext.user_id)}</Client></Dial>`) : xml('<Say>Extension not found.</Say><Hangup/>');
+        return ext?.user_id ? xml(`<Dial><Client>${esc(toClientName(ext.user_id))}</Client></Dial>`) : xml('<Say>Extension not found.</Say><Hangup/>');
       }
       const org = await this.db.one(`SELECT settings FROM organizations WHERE id=$1`, [user.org_id]);
       const verdict = await this.fraud.checkOutbound(user.org_id, to, org?.settings?.allowedCountries, countryOf(to));
@@ -335,7 +336,7 @@ export class TelephonyService {
         await this.provider.updateCall(sid, { twiml: xml(`<Play loop="0">${HOLD_MUSIC}</Play>`) });
         await this.db.query(`UPDATE calls SET status='on_hold' WHERE id=$1`, [call.id]); break;
       case 'unhold':
-        await this.provider.updateCall(sid, { twiml: xml(`<Dial><Client>${esc(call.user_id ?? user.userId!)}</Client></Dial>`) });
+        await this.provider.updateCall(sid, { twiml: xml(`<Dial><Client>${esc(toClientName(call.user_id ?? user.userId!))}</Client></Dial>`) });
         await this.db.query(`UPDATE calls SET status='in_progress' WHERE id=$1`, [call.id]); break;
       case 'transfer': {           // blind transfer
         if (!body.to) throw new BadRequestException('to is required');
@@ -406,7 +407,7 @@ export class TelephonyService {
     if (/^\d{2,6}$/.test(to)) {
       const ext = await this.db.one(`SELECT user_id FROM extensions WHERE org_id=$1 AND number=$2`, [orgId, to]);
       if (!ext?.user_id) throw new NotFoundException('Extension not found');
-      return `<Client>${esc(ext.user_id)}</Client>`;
+      return `<Client>${esc(toClientName(ext.user_id))}</Client>`;
     }
     const n = normalizeE164(to);
     if (!n) throw new BadRequestException('Invalid transfer target');
