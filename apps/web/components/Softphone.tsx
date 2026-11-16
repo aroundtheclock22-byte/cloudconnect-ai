@@ -5,7 +5,8 @@ import { Icon } from './Icon';
 import { ActiveCall, control, placeCall } from '@/lib/voice';
 import { fmtDuration, fmtPhone } from '@/lib/format';
 import { realtime } from '@/lib/realtime';
-import { Call, Device, getVoiceDevice, resolveCallId } from '@/lib/twilioVoice';
+import { Call, Device, friendlyVoiceError, getVoiceDevice, resolveCallId } from '@/lib/twilioVoice';
+import { micCheck } from '@/lib/voice';
 
 const Ctx = createContext<{ open: boolean; setOpen: (v: boolean) => void; dial: (n: string) => void }>(null as any);
 export const useSoftphone = () => useContext(Ctx);
@@ -53,7 +54,7 @@ export function SoftphoneProvider({ children }: { children: ReactNode }) {
     c.on('mute', (m: boolean) => setCall((x) => (x ? { ...x, muted: m } : x)));
     const end = () => { if (sdkCall.current === c) { sdkCall.current = null; setCall(null); setShowKeys(false); } };
     c.on('disconnect', end); c.on('cancel', end); c.on('reject', end);
-    c.on('error', (e: any) => { setError(e?.message ?? 'Call failed'); end(); });
+    c.on('error', (e: any) => { setError(friendlyVoiceError(e)); end(); });
   };
 
   useEffect(() => { const t = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(t); }, []);
@@ -83,7 +84,22 @@ export function SoftphoneProvider({ children }: { children: ReactNode }) {
       setCall(c);
       // Mock carriers have no media; simulate answer so in-call controls can be exercised.
       setTimeout(() => setCall((x) => (x && x.callId === c.callId ? { ...x, state: 'in_call', startedAt: Date.now() } : x)), 1500);
-    } catch (e) { setError((e as Error).message); }
+    } catch (e) { setError(friendlyVoiceError(e)); }
+  };
+
+  // Microphone test: live input level + device name, so people can fix audio before a call.
+  const [mic, setMic] = useState<{ level: number; label: string } | null>(null);
+  const stopMic = useRef<(() => void) | null>(null);
+  const testMic = async () => {
+    if (stopMic.current) { stopMic.current(); stopMic.current = null; setMic(null); return; }
+    setError(null);
+    try {
+      stopMic.current = await micCheck((level) => setMic((m) => ({ label: m?.label ?? '', level })));
+      const devs = await navigator.mediaDevices.enumerateDevices();
+      const label = devs.find((d) => d.kind === 'audioinput' && d.deviceId === 'default')?.label || devs.find((d) => d.kind === 'audioinput')?.label || 'Microphone';
+      setMic({ level: 0, label });
+      setTimeout(() => { stopMic.current?.(); stopMic.current = null; setMic(null); }, 15_000);
+    } catch (e) { setError(friendlyVoiceError(e)); }
   };
 
   const act = async (action: string, patch: Partial<ActiveCall> = {}, body = {}) => {
@@ -98,7 +114,7 @@ export function SoftphoneProvider({ children }: { children: ReactNode }) {
   };
   const answer = () => {
     const c = sdkIncoming.current;
-    if (c) { sdkIncoming.current = null; c.accept(); track(c, c.parameters.From ?? incoming?.from ?? '', incoming?.callId ?? null); setOpen(true); }
+    if (c) { sdkIncoming.current = null; setError(null); track(c, c.parameters.From ?? incoming?.from ?? '', incoming?.callId ?? null); c.accept(); setOpen(true); }
     setIncoming(null);
   };
   const decline = () => { sdkIncoming.current?.reject(); sdkIncoming.current = null; setIncoming(null); };
@@ -161,6 +177,14 @@ export function SoftphoneProvider({ children }: { children: ReactNode }) {
                 ))}
               </div>
               {error && <p className="mt-3 text-center text-xs text-rose-600" role="alert">{error}</p>}
+              {mic && (
+                <div className="mt-3 rounded-lg bg-slate-50 p-2 text-xs dark:bg-slate-800" aria-live="polite">
+                  <p className="truncate text-slate-600 dark:text-slate-300">🎙 {mic.label} — speak now</p>
+                  <div className="mt-1 h-2 rounded-full bg-slate-200 dark:bg-slate-700"><div className="h-2 rounded-full bg-emerald-500 transition-all" style={{ width: `${Math.min(100, Math.round(mic.level * 140))}%` }} /></div>
+                  <p className="mt-1 text-slate-500">{mic.level > 0.05 ? 'Microphone is working ✓' : 'No sound yet — if the bar never moves, check the mic.'}</p>
+                </div>
+              )}
+              <button className="btn-ghost mt-2 w-full text-xs" onClick={testMic}><Icon name="mic" className="h-4 w-4" />{mic ? 'Stop microphone test' : 'Test microphone'}</button>
               <button className="btn-primary mt-3 w-full bg-emerald-600 py-2.5 hover:bg-emerald-700" disabled={!number} onClick={() => dial(number)}><Icon name="phone" className="h-4 w-4" />Call</button>
             </div>
           )}
