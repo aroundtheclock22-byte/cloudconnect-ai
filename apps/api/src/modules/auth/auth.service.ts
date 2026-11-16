@@ -1,4 +1,4 @@
-import { BadRequestException, ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, ConflictException, ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
 import * as bcrypt from 'bcryptjs';
 import * as jwt from 'jsonwebtoken';
 import { createPublicKey, randomUUID } from 'crypto';
@@ -38,6 +38,7 @@ export class AuthService {
   }
 
   async signup(p: { orgName: string; email: string; password: string; firstName: string; lastName?: string; timezone?: string; country?: string }, meta: { ip?: string; ua?: string }): Promise<TokenPair> {
+    if (!config().ALLOW_PUBLIC_SIGNUP) throw new ForbiddenException('New sign-ups are closed. Ask an administrator of your company for an invite.');
     this.validatePassword(p.password);
     const exists = await this.db.one(`SELECT 1 FROM users WHERE email=$1 AND deleted_at IS NULL`, [p.email]);
     if (exists) throw new ConflictException('An account with this email already exists');

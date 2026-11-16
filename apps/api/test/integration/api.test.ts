@@ -22,6 +22,15 @@ describe('auth', () => {
     await request(http).post('/v1/auth/refresh').send({ refreshToken: r1.body.refreshToken }).expect(401);
   });
 
+  it('can close public sign-up (invite-only)', async () => {
+    const { resetConfig } = require('../../src/config');
+    process.env.ALLOW_PUBLIC_SIGNUP = 'false'; resetConfig();
+    try {
+      const r = await request(http).post('/v1/auth/signup').send({ orgName: 'Closed Co', email: `closed-${Date.now()}@example.com`, password: 'Sup3rSecret!x', firstName: 'C' }).expect(403);
+      expect(r.body.message).toMatch(/sign-ups are closed/i);
+    } finally { delete process.env.ALLOW_PUBLIC_SIGNUP; resetConfig(); }
+  });
+
   it('rejects weak passwords and duplicate emails', async () => {
     await request(http).post('/v1/auth/signup').send({ orgName: 'X', email: 'weak@example.com', password: 'short', firstName: 'A' }).expect(400);
     const o = await signup(http);

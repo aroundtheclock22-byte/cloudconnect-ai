@@ -45,6 +45,8 @@ const schema = z.object({
   SENTRY_DSN: z.string().optional(),
   CORS_ORIGINS: z.string().default('http://localhost:3000'),
   FRAUD_MAX_CALLS_PER_10MIN: z.coerce.number().default(60),
+  // When false, only invited users can join (new companies cannot self-register). Use on carrier-billed deployments.
+  ALLOW_PUBLIC_SIGNUP: z.enum(['true', 'false']).default('true').transform((v) => v === 'true'),
 });
 
 export type AppConfig = z.infer<typeof schema>;
