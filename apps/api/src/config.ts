@@ -20,6 +20,8 @@ const schema = z.object({
   TWILIO_API_KEY: z.string().optional(),
   TWILIO_API_SECRET: z.string().optional(),
   TWILIO_TWIML_APP_SID: z.string().optional(),
+  // Messaging Service holding the A2P 10DLC campaign; numbers bought in CloudConnect are added to it automatically.
+  TWILIO_MESSAGING_SERVICE_SID: z.string().optional(),
   TELNYX_API_KEY: z.string().optional(),
   TELNYX_PUBLIC_KEY: z.string().optional(),
   TELNYX_TEXML_APP_ID: z.string().optional(),

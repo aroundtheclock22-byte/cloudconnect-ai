@@ -95,7 +95,7 @@ export class SmsWebhookController {
   async status(@Param('provider') p: string, @Req() req: Request) {
     verifyWebhook(p, req);
     const b = req.body ?? {};
-    if (b.MessageSid) await this.svc.status(b.MessageSid, b.MessageStatus);
-    else if (b.data?.payload?.id) await this.svc.status(b.data.payload.id, b.data.payload.to?.[0]?.status);
+    if (b.MessageSid) await this.svc.status(b.MessageSid, b.MessageStatus, b.ErrorCode);
+    else if (b.data?.payload?.id) await this.svc.status(b.data.payload.id, b.data.payload.to?.[0]?.status, b.data.payload.errors?.[0]?.code);
   }
 }

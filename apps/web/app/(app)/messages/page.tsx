@@ -92,6 +92,7 @@ function Thread({ conv, title, onBack, onSent }: { conv: any; title: string; onB
                 <p className="whitespace-pre-wrap">{m.body}</p>
                 {m.media?.length > 0 && <p className="mt-1 text-xs opacity-80">📎 {m.media.length} attachment(s)</p>}
                 <p className={clsx('mt-0.5 text-[10px]', mine ? 'text-white/70' : 'text-slate-400')}>{fmtRelative(m.createdAt)}{mine && ` · ${m.readAt ? 'Read' : m.status}`}{m.status === 'scheduled' && ' ⏰'}</p>
+                {mine && m.status === 'failed' && <p className="mt-1 rounded bg-white/15 px-1.5 py-1 text-[11px] leading-snug text-white" role="alert">⚠ {m.error ?? 'Not delivered.'}</p>}
               </div>
             </div>);
         })}

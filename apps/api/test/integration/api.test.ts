@@ -170,6 +170,12 @@ describe('messaging', () => {
     await request(http).post('/v1/numbers').set(auth(o.token)).send({ e164: '+14155550188' }).expect(201);
     const sent = await request(http).post('/v1/messages').set(auth(o.token)).send({ to: ['+12125550111'], body: 'Hello from CloudConnect' }).expect(201);
     expect(sent.body).toMatchObject({ status: 'sent', segments: 1, direction: 'outbound' });
+    // Carrier rejects it (unregistered 10DLC number) → the reason is stored and explained
+    const db = (app as any).get(require('../../src/common/db.service').Db);
+    const { provider_message_id } = await db.one(`SELECT provider_message_id FROM messages WHERE id=$1`, [sent.body.id]);
+    await request(http).post('/v1/telephony/mock/sms/status').type('form').send({ MessageSid: provider_message_id, MessageStatus: 'undelivered', ErrorCode: '30034' }).expect(204);
+    const thread = await request(http).get(`/v1/conversations/${sent.body.conversationId}/messages`).set(auth(o.token)).expect(200);
+    expect(thread.body.find((m: any) => m.id === sent.body.id)).toMatchObject({ status: 'failed', errorCode: '30034', error: expect.stringMatching(/10DLC/) });
     await request(http).post('/v1/telephony/mock/sms').type('form').send({ From: '+12125550111', To: '+14155550188', Body: 'Can we talk tomorrow?', MessageSid: 'SM1' }).expect(200);
     const convs = await request(http).get('/v1/conversations').set(auth(o.token)).expect(200);
     expect(convs.body[0]).toMatchObject({ unread: 1, lastMessage: 'Can we talk tomorrow?' });

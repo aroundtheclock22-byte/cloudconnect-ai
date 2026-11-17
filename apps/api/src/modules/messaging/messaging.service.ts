@@ -5,7 +5,7 @@ import { EventBus } from '../../common/events';
 import { AuthUser, can } from '../../common/auth';
 import { config } from '../../config';
 import { TelephonyService } from '../telephony/telephony.service';
-import { HELP_WORDS, renderTemplate, smsSegments, START_WORDS, STOP_WORDS } from './sms';
+import { HELP_WORDS, renderTemplate, smsErrorMessage, smsSegments, START_WORDS, STOP_WORDS } from './sms';
 
 @Injectable()
 export class MessagingService implements OnModuleInit, OnModuleDestroy {
@@ -109,10 +109,13 @@ export class MessagingService implements OnModuleInit, OnModuleDestroy {
     return msg;
   }
 
-  async status(providerMessageId: string, status: string) {
+  async status(providerMessageId: string, status: string, errorCode?: string | null) {
     const map: Record<string, string> = { sent: 'sent', delivered: 'delivered', failed: 'failed', undelivered: 'failed', read: 'read' };
     if (!map[status]) return;
-    await this.db.query(`UPDATE messages SET status=$2::msg_status, read_at = CASE WHEN $2='read' THEN now() ELSE read_at END WHERE provider_message_id=$1`, [providerMessageId, map[status]]);
+    const code = errorCode ? String(errorCode) : null;
+    await this.db.query(`UPDATE messages SET status=$2::msg_status, read_at = CASE WHEN $2='read' THEN now() ELSE read_at END,
+        error_code = COALESCE($3, error_code), error_message = COALESCE($4, error_message) WHERE provider_message_id=$1`,
+      [providerMessageId, map[status], code, smsErrorMessage(code)]);
   }
 
   async conversations(user: AuthUser, q: { kind?: string; q?: string }) {
@@ -200,6 +203,7 @@ export class MessagingService implements OnModuleInit, OnModuleDestroy {
 
   shape(m: any) {
     return { id: m.id, conversationId: m.conversation_id, direction: m.direction, status: m.status, senderUserId: m.sender_user_id, from: m.from_address, to: m.to_addresses, body: m.body, media: m.media,
-      segments: m.segments, costCents: m.cost_cents, scheduledAt: m.scheduled_at, readAt: m.read_at, createdAt: m.created_at };
+      segments: m.segments, costCents: m.cost_cents, scheduledAt: m.scheduled_at, readAt: m.read_at, createdAt: m.created_at,
+      errorCode: m.error_code ?? null, error: m.error_message ?? null };
   }
 }

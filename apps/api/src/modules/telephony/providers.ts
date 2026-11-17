@@ -89,7 +89,23 @@ export class TwilioProvider implements TelephonyProvider {
   async purchaseNumber(e164: string, w: { voiceUrl: string; smsUrl: string; statusUrl?: string }) {
     const r: any = await this.req('POST', '/IncomingPhoneNumbers.json', { PhoneNumber: e164, VoiceUrl: w.voiceUrl, SmsUrl: w.smsUrl, VoiceMethod: 'POST', SmsMethod: 'POST',
       StatusCallback: w.statusUrl, StatusCallbackMethod: w.statusUrl ? 'POST' : undefined });
+    await this.joinMessagingService(r.sid);
     return { providerSid: r.sid };
+  }
+
+  /**
+   * A2P 10DLC: US carriers only deliver business texts from numbers in a registered campaign. The
+   * campaign belongs to a Messaging Service, so adding the number to that service is what extends
+   * the registration to it. Best-effort: a failure is logged and the number still works for voice.
+   */
+  protected async joinMessagingService(phoneNumberSid: string) {
+    const mg = config().TWILIO_MESSAGING_SERVICE_SID;
+    if (!mg || this.name !== 'twilio') return;
+    const res = await fetch(`https://messaging.twilio.com/v1/Services/${mg}/PhoneNumbers`, {
+      method: 'POST', body: new URLSearchParams({ PhoneNumberSid: phoneNumberSid }),
+      headers: { Authorization: 'Basic ' + Buffer.from(`${this.sid}:${this.token}`).toString('base64') },
+    }).catch((e) => ({ ok: false, status: 0, text: async () => String(e) }) as any);
+    if (!res.ok) new Logger('Twilio').warn(`Could not add ${phoneNumberSid} to messaging service ${mg} (10DLC): ${res.status} ${await res.text()}`);
   }
   async releaseNumber(sid: string) { await this.req('DELETE', `/IncomingPhoneNumbers/${sid}.json`); }
   /** Twilio Voice SDK AccessToken (JWT with VoiceGrant). */
