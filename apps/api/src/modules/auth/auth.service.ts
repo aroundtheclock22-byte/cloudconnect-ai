@@ -143,30 +143,57 @@ export class AuthService {
   }
 
   // ───────────── OAuth / OIDC (Google, Microsoft, Apple) ─────────────
+  /** Which providers are configured (drives which buttons the login page shows). */
+  oauthProviders() {
+    return (Object.keys(OAUTH_PROVIDERS) as OAuthProvider[]).filter((p) => { try { this.clientFor(p); return true; } catch { return false; } });
+  }
+
+  private appleClientSecret(): string | undefined {
+    const c = config();
+    if (c.APPLE_TEAM_ID && c.APPLE_KEY_ID && c.APPLE_PRIVATE_KEY && c.APPLE_CLIENT_ID) {
+      // Apple requires an ES256 JWT signed with the .p8 key instead of a static secret (max 6 months).
+      return jwt.sign({}, c.APPLE_PRIVATE_KEY.replace(/\\n/g, '\n'), { algorithm: 'ES256', keyid: c.APPLE_KEY_ID, issuer: c.APPLE_TEAM_ID,
+        audience: 'https://appleid.apple.com', subject: c.APPLE_CLIENT_ID, expiresIn: 300 });
+    }
+    return c.APPLE_CLIENT_SECRET;
+  }
+
   private clientFor(p: OAuthProvider) {
     const c = config();
     const id = { google: c.GOOGLE_CLIENT_ID, microsoft: c.MICROSOFT_CLIENT_ID, apple: c.APPLE_CLIENT_ID }[p];
-    const secret = { google: c.GOOGLE_CLIENT_SECRET, microsoft: c.MICROSOFT_CLIENT_SECRET, apple: c.APPLE_CLIENT_SECRET }[p];
-    if (!id || !secret) throw new BadRequestException(`${p} login is not configured`);
-    return { id, secret, redirect: `${c.PUBLIC_URL}/v1/auth/oauth/${p}/callback` };
+    const hasSecret = { google: !!c.GOOGLE_CLIENT_SECRET, microsoft: !!c.MICROSOFT_CLIENT_SECRET,
+      apple: !!(c.APPLE_CLIENT_SECRET || (c.APPLE_TEAM_ID && c.APPLE_KEY_ID && c.APPLE_PRIVATE_KEY)) }[p];
+    if (!id || !hasSecret) throw new BadRequestException(`${p} login is not configured`);
+    const base = (c.OAUTH_REDIRECT_BASE ?? c.WEB_URL).replace(/\/$/, '');
+    return { id, secret: () => (p === 'apple' ? this.appleClientSecret()! : p === 'google' ? c.GOOGLE_CLIENT_SECRET! : c.MICROSOFT_CLIENT_SECRET!),
+      redirect: `${base}/v1/auth/oauth/${p}/callback` };
   }
 
+  /** Returns the provider URL plus a nonce the controller binds to this browser (login-CSRF protection). */
   oauthStart(p: OAuthProvider) {
     const cl = this.clientFor(p);
-    const state = jwt.sign({ p, n: randomToken(12) }, config().JWT_SECRET, { expiresIn: 600 });
-    const q = new URLSearchParams({ client_id: cl.id, redirect_uri: cl.redirect, response_type: 'code', scope: 'openid email profile', state, ...(p === 'apple' ? { response_mode: 'form_post', scope: 'name email' } : {}) });
-    return { url: `${OAUTH_PROVIDERS[p].auth}?${q}` };
+    const nonce = randomToken(16);
+    const state = jwt.sign({ p, n: nonce }, config().JWT_SECRET, { expiresIn: 600 });
+    const q = new URLSearchParams({ client_id: cl.id, redirect_uri: cl.redirect, response_type: 'code', scope: 'openid email profile', state,
+      ...(p === 'apple' ? { response_mode: 'form_post', scope: 'name email' } : {}), ...(p === 'google' ? { prompt: 'select_account' } : {}) });
+    return { url: `${OAUTH_PROVIDERS[p].auth}?${q}`, nonce };
   }
 
-  async oauthCallback(p: OAuthProvider, code: string, state: string, meta: { ip?: string; ua?: string }): Promise<TokenPair> {
-    try { if ((jwt.verify(state, config().JWT_SECRET) as any).p !== p) throw new Error(); } catch { throw new UnauthorizedException('Invalid OAuth state'); }
+  async oauthCallback(p: OAuthProvider, code: string, state: string, browserNonce: string | undefined, meta: { ip?: string; ua?: string }): Promise<TokenPair> {
+    let st: any;
+    try { st = jwt.verify(state, config().JWT_SECRET); } catch { throw new UnauthorizedException('Sign-in expired or was tampered with. Please try again.'); }
+    if (st.p !== p || !browserNonce || st.n !== browserNonce) throw new UnauthorizedException('Sign-in could not be verified for this browser. Please try again.');
+    if (!code) throw new UnauthorizedException('Sign-in was cancelled.');
     const cl = this.clientFor(p);
     const res = await fetch(OAUTH_PROVIDERS[p].token, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({ grant_type: 'authorization_code', code, client_id: cl.id, client_secret: cl.secret, redirect_uri: cl.redirect }) });
+      body: new URLSearchParams({ grant_type: 'authorization_code', code, client_id: cl.id, client_secret: cl.secret(), redirect_uri: cl.redirect }) });
     if (!res.ok) throw new UnauthorizedException('OAuth code exchange failed');
     const { id_token } = (await res.json()) as { id_token: string };
     const claims = await this.verifyIdToken(p, id_token, cl.id);
-    if (!claims.email || claims.email_verified === false || claims.email_verified === 'false') throw new UnauthorizedException('Verified email required');
+    // Microsoft work/school accounts often omit `email`; their sign-in name is the address.
+    if (!claims.email && p === 'microsoft' && /@/.test(claims.preferred_username ?? '')) claims.email = claims.preferred_username;
+    if (!claims.email || claims.email_verified === false || claims.email_verified === 'false') throw new UnauthorizedException('Your account needs a verified email address.');
+    claims.email = String(claims.email).toLowerCase();
     let u = await this.db.one(`SELECT u.* FROM oauth_identities i JOIN users u ON u.id=i.user_id WHERE i.provider=$1 AND i.subject=$2 AND u.deleted_at IS NULL`, [p, claims.sub]);
     if (!u) {
       // Link to an existing invited/active account with the same verified email; self-service signup otherwise happens via /signup.

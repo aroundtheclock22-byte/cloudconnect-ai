@@ -43,7 +43,13 @@ const schema = z.object({
   MICROSOFT_CLIENT_ID: z.string().optional(),
   MICROSOFT_CLIENT_SECRET: z.string().optional(),
   APPLE_CLIENT_ID: z.string().optional(),
-  APPLE_CLIENT_SECRET: z.string().optional(),
+  APPLE_CLIENT_SECRET: z.string().optional(),   // legacy: a pre-generated client-secret JWT (expires ≤ 6 months)
+  // Preferred for Apple: CloudConnect signs a fresh client secret per login from the .p8 key.
+  APPLE_TEAM_ID: z.string().optional(),
+  APPLE_KEY_ID: z.string().optional(),
+  APPLE_PRIVATE_KEY: z.string().optional(),     // contents of AuthKey_XXXX.p8 (literal \n allowed)
+  // Where providers send users back. Defaults to WEB_URL so the session cookie lands on the web app's domain.
+  OAUTH_REDIRECT_BASE: z.string().optional(),
   SENTRY_DSN: z.string().optional(),
   CORS_ORIGINS: z.string().default('http://localhost:3000'),
   FRAUD_MAX_CALLS_PER_10MIN: z.coerce.number().default(60),

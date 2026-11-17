@@ -58,6 +58,75 @@ describe('auth', () => {
   });
 });
 
+describe('social sign-in (OIDC)', () => {
+  const { generateKeyPairSync } = require('crypto');
+  const jwt = require('jsonwebtoken');
+  const { resetConfig, config } = require('../../src/config');
+  const env = { GOOGLE_CLIENT_ID: 'gid.apps.googleusercontent.com', GOOGLE_CLIENT_SECRET: 'gsecret', WEB_URL: 'https://app.example.com' };
+  const cookieOf = (res: any, name: string) => (res.headers['set-cookie'] ?? []).map((c: string) => c.split(';')[0]).find((c: string) => c.startsWith(name + '='));
+  let realFetch: any;
+  beforeAll(() => { Object.assign(process.env, env); resetConfig(); realFetch = global.fetch; });
+  afterAll(() => { for (const k of Object.keys(env)) delete process.env[k]; delete process.env.APPLE_CLIENT_ID; delete process.env.APPLE_TEAM_ID; delete process.env.APPLE_KEY_ID; delete process.env.APPLE_PRIVATE_KEY; resetConfig(); global.fetch = realFetch; });
+
+  it('lists only configured providers and sends users back via the web domain', async () => {
+    const r = await request(http).get('/v1/auth/oauth-providers').expect(200);
+    expect(r.body.providers).toEqual(['google']);
+    await request(http).get('/v1/auth/oauth/microsoft').expect(400);
+    const s = await request(http).get('/v1/auth/oauth/google').expect(200);
+    const u = new URL(s.body.url);
+    expect(u.searchParams.get('redirect_uri')).toBe('https://app.example.com/v1/auth/oauth/google/callback');
+    expect(cookieOf(s, 'cc_oauth')).toBeTruthy();
+  });
+
+  it('completes a Google sign-in and rejects forged or cancelled callbacks', async () => {
+    const o = await signup(http);
+    const { privateKey, publicKey } = generateKeyPairSync('rsa', { modulusLength: 2048 });
+    const jwk = { ...publicKey.export({ format: 'jwk' }), kid: 'k1', alg: 'RS256', use: 'sig' };
+    const idToken = jwt.sign({ sub: 'google-sub-1', email: o.email.toUpperCase(), email_verified: true }, privateKey, { algorithm: 'RS256', keyid: 'k1', audience: env.GOOGLE_CLIENT_ID, issuer: 'https://accounts.google.com', expiresIn: 300 });
+    global.fetch = (async (url: any, init: any) => {
+      const u = String(url);
+      if (u.startsWith('https://oauth2.googleapis.com/token')) { expect(String(init.body)).toContain('client_secret=gsecret'); return new Response(JSON.stringify({ id_token: idToken }), { status: 200 }); }
+      if (u.startsWith('https://www.googleapis.com/oauth2/v3/certs')) return new Response(JSON.stringify({ keys: [jwk] }), { status: 200 });
+      return realFetch(url, init);
+    }) as any;
+    const start = await request(http).get('/v1/auth/oauth/google').expect(200);
+    const state = new URL(start.body.url).searchParams.get('state')!;
+    const nonce = cookieOf(start, 'cc_oauth')!;
+
+    // Same state from a different browser (no nonce cookie) → back to login with a message
+    const forged = await request(http).get(`/v1/auth/oauth/google/callback?code=abc&state=${encodeURIComponent(state)}`).expect(302);
+    expect(forged.headers.location).toMatch(/^https:\/\/app\.example\.com\/login\?error=/);
+    expect(cookieOf(forged, 'cc_refresh')).toBeUndefined();
+
+    // User cancels at Google
+    const cancelled = await request(http).get(`/v1/auth/oauth/google/callback?error=access_denied&state=${encodeURIComponent(state)}`).set('Cookie', nonce).expect(302);
+    expect(decodeURIComponent(cancelled.headers.location)).toMatch(/cancelled/);
+
+    // Genuine callback → session cookie + redirect into the app; refresh then works
+    const ok = await request(http).get(`/v1/auth/oauth/google/callback?code=abc&state=${encodeURIComponent(state)}`).set('Cookie', nonce).expect(302);
+    expect(ok.headers.location).toBe('https://app.example.com/auth/callback');
+    const refresh = cookieOf(ok, 'cc_refresh')!;
+    const me = await request(http).post('/v1/auth/refresh').set('Cookie', refresh).send({}).expect(200);
+    expect(me.body.user.email).toBe(o.email);
+    global.fetch = realFetch;
+  });
+
+  it('signs a fresh ES256 client secret for Apple from the .p8 key', async () => {
+    const { privateKey, publicKey } = generateKeyPairSync('ec', { namedCurve: 'P-256' });
+    Object.assign(process.env, { APPLE_CLIENT_ID: 'com.example.web', APPLE_TEAM_ID: 'TEAM123456', APPLE_KEY_ID: 'KEY1234567',
+      APPLE_PRIVATE_KEY: privateKey.export({ format: 'pem', type: 'pkcs8' }).toString().replace(/\n/g, '\\n') });
+    resetConfig();
+    const r = await request(http).get('/v1/auth/oauth-providers').expect(200);
+    expect(r.body.providers).toEqual(['google', 'apple']);
+    const svc = (app as any).get(require('../../src/modules/auth/auth.service').AuthService);
+    const secret = svc.appleClientSecret();
+    const decoded = jwt.verify(secret, publicKey, { algorithms: ['ES256'], audience: 'https://appleid.apple.com', issuer: 'TEAM123456' });
+    expect(decoded).toMatchObject({ sub: 'com.example.web' });
+    expect(jwt.decode(secret, { complete: true }).header.kid).toBe('KEY1234567');
+    void config;
+  });
+});
+
 describe('RBAC & tenancy', () => {
   it('prevents privilege escalation and enforces permissions', async () => {
     const o = await signup(http);

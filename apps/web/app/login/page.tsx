@@ -14,7 +14,13 @@ export default function Login() {
   const [busy, setBusy] = useState(false);
   const { me, reload } = useAuth();
   const router = useRouter();
+  const [providers, setProviders] = useState<string[]>([]);
   useEffect(() => { if (me) router.replace('/dashboard'); }, [me, router]);
+  useEffect(() => {
+    const e = new URLSearchParams(window.location.search).get('error');
+    if (e) { setError(e); window.history.replaceState(null, '', '/login'); }
+    api<{ providers: string[] }>('/v1/auth/oauth-providers').then((r) => setProviders(r.providers)).catch(() => setProviders([]));
+  }, []);
   const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement>) => setF({ ...f, [k]: e.target.value });
 
   const submit = async (e: FormEvent) => {
@@ -58,8 +64,10 @@ export default function Login() {
           {mfa && <Field label="Authentication code"><input className="input font-mono tracking-widest" inputMode="numeric" pattern="\d{6}" maxLength={6} autoFocus required value={f.mfaCode} onChange={set('mfaCode')} /></Field>}
           <ErrorNote error={error} />
           <button className="btn-primary w-full py-2.5" disabled={busy}>{busy ? 'Please wait…' : mode === 'login' ? (mfa ? 'Verify' : 'Sign in') : 'Create account'}</button>
-          <div className="relative py-2 text-center text-xs text-slate-400"><span className="bg-slate-50 px-2 dark:bg-slate-950">or continue with</span><div className="absolute inset-x-0 top-1/2 -z-10 border-t border-slate-200 dark:border-slate-800" /></div>
-          <div className="grid grid-cols-3 gap-2">{['google', 'microsoft', 'apple'].map((p) => <button type="button" key={p} className="btn-outline capitalize" onClick={() => sso(p)}>{p}</button>)}</div>
+          {providers.length > 0 && (<>
+            <div className="relative py-2 text-center text-xs text-slate-400"><span className="bg-slate-50 px-2 dark:bg-slate-950">or continue with</span><div className="absolute inset-x-0 top-1/2 -z-10 border-t border-slate-200 dark:border-slate-800" /></div>
+            <div className={`grid gap-2 ${['grid-cols-1', 'grid-cols-2', 'grid-cols-3'][providers.length - 1] ?? 'grid-cols-3'}`}>{providers.map((p) => <button type="button" key={p} className="btn-outline capitalize" onClick={() => sso(p)}>{p}</button>)}</div>
+          </>)}
           <p className="text-center text-sm text-slate-500">
             {mode === 'login' ? <>New to CloudConnect? <button type="button" className="font-medium text-brand-600" onClick={() => setMode('signup')}>Create an account</button></> : <>Already have an account? <button type="button" className="font-medium text-brand-600" onClick={() => setMode('login')}>Sign in</button></>}
           </p>
